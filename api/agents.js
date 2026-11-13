@@ -61,7 +61,7 @@ const PACKAGE_TIERS = {
   Infinity: { level: 4, ordersTotal: -1,   ratePerMin: 100, unlimited: true },
 };
 
-const CLAUDE_MODEL = (process.env.CLAUDE_MODEL || process.env.ANTHROPIC_MODEL || 'claude-3-5-haiku-latest');
+const CLAUDE_MODEL = (process.env.CLAUDE_MODEL || process.env.ANTHROPIC_MODEL || 'claude-haiku-5-5');
 const CLAUDE_API_URL = 'https://api.anthropic.com/v1/messages';
 const TAX_RATE = 0.18;
 

@@ -18,7 +18,7 @@ try {
 } catch (e) { console.error('[fb-init]', e.message); }
 
 const PACKAGE_LEVELS = { Free: 0, Basic: 1, Gold: 2, Diamond: 3, Infinity: 4 };
-const CLAUDE_MODEL = (process.env.CLAUDE_MODEL || process.env.ANTHROPIC_MODEL || 'claude-3-5-haiku-latest');
+const CLAUDE_MODEL = (process.env.CLAUDE_MODEL || process.env.ANTHROPIC_MODEL || 'claude-haiku-5-5');
 const CLAUDE_API_URL = 'https://api.anthropic.com/v1/messages';
 
 async function callClaude(systemPrompt, userText, image = null, useThinking = false) {

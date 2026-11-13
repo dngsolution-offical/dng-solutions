@@ -13,10 +13,10 @@ const PACKAGES = {
 };
 
 const BANK_DETAILS = {
-  bankName: 'TBC Bank',
-  accountNumber: 'GE00TB0000000000000000',
-  receiverName: 'DNG Solutions',
-  phone: '+995 555 000 000'
+  bankName: 'Bank of Georgia (BOG)',
+  accountNumber: 'GE14BG0000000614054208GEL',
+  receiverName: 'nikoloz chiglashvili',
+  phone: '+995 551 071 451'
 };
 
 const WESTERN_UNION_DETAILS = {
