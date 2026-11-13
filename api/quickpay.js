@@ -41,10 +41,14 @@ module.exports = async function handler(req, res) {
     } catch { body = {}; }
   }
 
-  const { packageId, billingCycle, userId, userEmail, amount, paymentMethod } = body || {};
+  const { packageId, billingCycle, userId, userEmail, amount, paymentMethod, mtcn } = body || {};
 
   if (!userId || !packageId) {
     return res.status(400).json({ ok: false, error: 'missing_fields' });
+  }
+
+  if (paymentMethod === 'western_union' && (!mtcn || String(mtcn).trim().length < 8)) {
+    return res.status(400).json({ ok: false, error: 'missing_mtcn', message: 'MTCN კოდი აუცილებელია' });
   }
 
   if (!db) {
@@ -62,11 +66,12 @@ module.exports = async function handler(req, res) {
       billingCycle: billingCycle || 'monthly',
       amount: amount || 0,
       paymentMethod: paymentMethod || 'bank_transfer',
+      mtcn: paymentMethod === 'western_union' ? String(mtcn).trim() : null,
       status: 'pending',
       createdAt: new Date(),
     });
 
-    console.log('[quickpay] ✅ Payment request created:', requestId);
+    console.log('[quickpay] ✅ Payment request created:', requestId, '| method:', paymentMethod, '| mtcn:', mtcn || '-');
 
     return res.status(200).json({
       ok: true,
