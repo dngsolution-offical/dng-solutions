@@ -1,45 +1,15 @@
-// api/quickpay.js — TEST MODE: ALL PACKAGES = 0 GEL
-const fs = require('fs');
-const path = require('path');
+// api/quickpay.js — REAL BOG INTEGRATION (0.01 GEL test mode)
+// All packages = 0.01 GEL for testing. Change to real prices later.
 
-let admin, db;
-try {
-  admin = require('firebase-admin');
-  
-  if (!admin.apps || admin.apps.length === 0) {
-    let sa = null;
-    try {
-      const kp = path.join(process.cwd(), 'firebase-key.json');
-      if (fs.existsSync(kp)) sa = JSON.parse(fs.readFileSync(kp, 'utf8'));
-    } catch (e) { console.error('[key]', e.message); }
-    
-    if (!sa && process.env.FIREBASE_SERVICE_ACCOUNT) {
-      try { sa = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT); } catch {}
-    }
-    
-    if (sa && sa.project_id) {
-      admin.initializeApp({ credential: admin.credential.cert(sa) });
-    } else {
-      admin.initializeApp({ credential: admin.credential.applicationDefault() });
-    }
-  }
-  db = admin.firestore();
-} catch (e) {
-  console.error('[fb-init]', e.message);
-}
-
-const PACKAGE_NAMES = {
-  basic: 'Basic',
-  gold: 'Gold',
-  diamond: 'Diamond',
-  infinity: 'Infinity',
+const PACKAGE_PRICES_USD = {
+  basic: { monthly: 29, semiannual: 79, yearly: 350 },
+  gold: { monthly: 99, semiannual: 249, yearly: 1500 },
+  diamond: { monthly: 279, semiannual: 799, yearly: 5000 },
+  infinity: { monthly: 499, semiannual: 1499, yearly: 9999 },
 };
 
-const BILLING_DAYS = {
-  monthly: 30,
-  semiannual: 180,
-  yearly: 365,
-};
+const TEST_PRICE_GEL = 0.01;  // ← 0.01 GEL for all packages (test)
+const USE_REAL_PRICES = false; // ← Change to true when ready for real prices
 
 module.exports = async function handler(req, res) {
   res.setHeader('Content-Type', 'application/json');
@@ -62,75 +32,135 @@ module.exports = async function handler(req, res) {
   const { packageId, billingCycle, userId, userEmail } = body || {};
 
   if (!packageId || !billingCycle || !userId) {
-    return res.status(400).json({ ok: false, error: 'missing_fields', message: 'packageId, billingCycle, userId required' });
+    return res.status(400).json({ ok: false, error: 'missing_fields' });
   }
 
   const pkgKey = String(packageId).toLowerCase();
-  const packageName = PACKAGE_NAMES[pkgKey];
+  const priceUSD = PACKAGE_PRICES_USD[pkgKey]?.[billingCycle];
 
-  if (!packageName) {
-    return res.status(400).json({ ok: false, error: 'invalid_package', packageId: pkgKey });
+  if (!priceUSD) {
+    return res.status(400).json({ ok: false, error: 'invalid_package' });
   }
 
-  const days = BILLING_DAYS[billingCycle] || 30;
-
-  if (!db) {
-    return res.status(500).json({ ok: false, error: 'database_unavailable' });
+  // ─── Calculate amount ───
+  let amountGEL;
+  if (USE_REAL_PRICES) {
+    amountGEL = Math.round(priceUSD * 2.7 * 100) / 100;
+  } else {
+    amountGEL = TEST_PRICE_GEL; // 0.01 GEL for testing
   }
 
-  // ═══ ALWAYS 0 GEL — TEST MODE ═══
-  console.log('[quickpay] 🧪 TEST MODE: activating', packageName, 'for', days, 'days — 0 GEL');
+  console.log('[quickpay] Package:', pkgKey, '| Billing:', billingCycle, '| Amount:', amountGEL, 'GEL');
+
+  // ─── Get BOG credentials ───
+  const clientId = process.env.BOG_CLIENT_ID;
+  const clientSecret = process.env.BOG_CLIENT_SECRET;
+
+  if (!clientId || !clientSecret) {
+    console.error('[quickpay] BOG credentials missing');
+    return res.status(500).json({
+      ok: false,
+      error: 'bog_credentials_missing',
+      message: 'Set BOG_CLIENT_ID and BOG_CLIENT_SECRET in .env',
+    });
+  }
+
+  // ─── Step 1: Get Access Token from BOG ───
+  const credentials = Buffer.from(`${clientId}:${clientSecret}`).toString('base64');
+  const tokenUrl = 'https://oauth2.bog.ge/auth/realms/bog/protocol/openid-connect/token';
+
+  let accessToken;
+  try {
+    console.log('[quickpay] Getting BOG access token...');
+    
+    const tokenRes = await fetch(tokenUrl, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Basic ${credentials}`,
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+      body: 'grant_type=client_credentials',
+    });
+
+    if (!tokenRes.ok) {
+      const errText = await tokenRes.text();
+      console.error('[quickpay] BOG token error:', tokenRes.status, errText.slice(0, 300));
+      return res.status(502).json({
+        ok: false,
+        error: 'bog_token_error',
+        status: tokenRes.status,
+        detail: errText.slice(0, 300),
+      });
+    }
+
+    const tokenData = await tokenRes.json();
+    accessToken = tokenData.access_token;
+    console.log('[quickpay] ✅ Access token received');
+  } catch (err) {
+    console.error('[quickpay] Token exception:', err.message);
+    return res.status(500).json({ ok: false, error: 'bog_token_exception', message: err.message });
+  }
+
+  // ─── Step 2: Create Payment ───
+  const siteUrl = process.env.VITE_SITE_URL || 'http://localhost:3000';
+  const orderId = `DNG_${userId}_${pkgKey}_${billingCycle}_${Date.now()}`;
 
   try {
-    const expiresAt = new Date();
-    expiresAt.setDate(expiresAt.getDate() + days);
-
-    const paymentId = `TEST_${Date.now()}_${Math.random().toString(36).substring(2, 10)}`;
-
-    // Update user package
-    await db.collection('users').doc(userId).update({
-      package: packageName,
-      expiresAt: expiresAt,
-      lastPaymentId: paymentId,
-      packageUpdatedAt: admin.firestore.FieldValue.serverTimestamp(),
+    console.log('[quickpay] Creating BOG payment...');
+    
+    const paymentRes = await fetch('https://api.bog.ge/payments/v1/ecommerce/orders', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${accessToken}`,
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+      },
+      body: JSON.stringify({
+        callback_url: `${siteUrl}/api/quickpay-callback`,
+        external_order_id: orderId,
+        purchase_units: {
+          currency: 'GEL',
+          total_amount: amountGEL,
+          basket: [{
+            product_id: pkgKey,
+            name: `DNG ${pkgKey} - ${billingCycle}`,
+            quantity: 1,
+            unit_price: amountGEL,
+          }],
+        },
+        redirect_urls: {
+          success: `${siteUrl}/dashboard?payment=success`,
+          fail: `${siteUrl}/packages?payment=failed`,
+        },
+      }),
     });
 
-    // Log transaction
-    await db.collection('transactions').add({
-      userId,
-      userEmail: userEmail || '',
-      packageId: pkgKey,
-      billingCycle,
-      amount: 0,
-      currency: 'GEL',
-      status: 'test',
-      testMode: true,
-      paymentId,
-      expiresAt,
-      createdAt: admin.firestore.FieldValue.serverTimestamp(),
-    });
+    if (!paymentRes.ok) {
+      const errText = await paymentRes.text();
+      console.error('[quickpay] BOG payment error:', paymentRes.status, errText.slice(0, 500));
+      return res.status(502).json({
+        ok: false,
+        error: 'bog_payment_error',
+        status: paymentRes.status,
+        detail: errText.slice(0, 500),
+      });
+    }
 
-    console.log('[quickpay] ✅ Activated:', { userId, packageName, days });
+    const paymentData = await paymentRes.json();
+    console.log('[quickpay] ✅ Payment created:', paymentData.order_id);
 
     return res.status(200).json({
       ok: true,
-      testMode: true,
-      activated: true,
-      package: packageName,
-      packageId: pkgKey,
-      billingCycle,
-      days,
-      expiresAt: expiresAt.toISOString(),
-      amountGEL: 0,
-      paymentId,
-      message: `🧪 Test: ${packageName} activated for ${days} days (0 GEL)`,
+      paymentUrl: paymentData.redirect_url,
+      paymentId: paymentData.order_id,
+      orderId: orderId,
+      amountGEL: amountGEL,
+      package: pkgKey,
+      billingCycle: billingCycle,
+      testMode: !USE_REAL_PRICES,
     });
   } catch (err) {
-    console.error('[quickpay] Activation failed:', err.message);
-    return res.status(500).json({
-      ok: false,
-      error: 'activation_failed',
-      message: err.message,
-    });
+    console.error('[quickpay] Payment exception:', err.message);
+    return res.status(500).json({ ok: false, error: 'bog_payment_exception', message: err.message });
   }
 };
