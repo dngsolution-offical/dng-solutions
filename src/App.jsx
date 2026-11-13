@@ -1,4 +1,4 @@
-import React from 'react';
+﻿import React from 'react';
 import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
 import { AnimatePresence, MotionConfig } from 'framer-motion';
 import { Toaster } from 'react-hot-toast';
@@ -19,6 +19,7 @@ import Settings from './pages/Settings';
 import Dashboard from './pages/Dashboard';
 import AIAutomation from './pages/AIAutomation';
 import Admin from './pages/Admin';
+import AdminPayments from './pages/AdminPayments';
 import AdminLogin from './pages/AdminLogin';
 import AdminAgents from './pages/AdminAgents';
 import AgentHistory from './pages/AgentHistory';
@@ -58,6 +59,7 @@ function AppContent() {
           <Route path="/settings" element={<Settings />} />
           <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
           <Route path="/ai" element={<AIAutomation />} />
+          <Route path="/admin/payments" element={<AdminPayments />} />
           <Route path="/admin" element={<ProtectedRoute><Admin /></ProtectedRoute>} />
           <Route path="/admin-login" element={<AdminLogin />} />
           <Route path="/admin/agents" element={<AdminAgents />} />
