@@ -229,6 +229,33 @@ export default function Checkout() {
       setLoading(false);
     }
   };
+  const handleBogPayment = async () => {
+    if (!currentUser) { navigate('/login'); return; }
+    setLoading(true);
+    try {
+      const res = await fetch('/api/bog-create-order', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          packageId: safePackageId,
+          billingCycle: 'monthly',
+          userId: currentUser.uid,
+          userEmail: currentUser.email,
+          baseUrl: window.location.origin,
+        }),
+      });
+      const data = await res.json();
+      if (!data.ok || !data.paymentUrl) {
+        throw new Error(data.message || data.error || 'BOG payment failed');
+      }
+      // Redirect to BOG payment page
+      window.location.href = data.paymentUrl;
+    } catch (err) {
+      toast.error('BOG: ' + err.message);
+      setLoading(false);
+    }
+  };
+
 
   const isReady = showDetails && (method === 'bank_transfer' || (method === 'western_union' && mtcn.trim().length >= 8));
 

@@ -1,4 +1,4 @@
-﻿import React from 'react';
+import React from 'react';
 import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
 import { AnimatePresence, MotionConfig } from 'framer-motion';
 import { Toaster } from 'react-hot-toast';
@@ -25,6 +25,7 @@ import AdminAgents from './pages/AdminAgents';
 import AgentHistory from './pages/AgentHistory';
 import Schedules from './pages/Schedules';
 import Checkout from './pages/Checkout';
+import CheckoutSuccess from './pages/CheckoutSuccess';
 import Diagnostic from './pages/Diagnostic';
 import Privacy from './pages/Privacy';
 import Terms from './pages/Terms';
@@ -67,6 +68,7 @@ function AppContent() {
           <Route path="/agents/history" element={<AgentHistory />} />
           <Route path="/agents/schedules" element={<Schedules />} />
           <Route path="/checkout" element={<Checkout />} />
+          <Route path="/checkout/success" element={<CheckoutSuccess />} />
           <Route path="/checkout/:packageId" element={<Checkout />} />
           <Route path="/diagnostic" element={<Diagnostic />} />
           <Route path="/privacy" element={<Privacy />} />
