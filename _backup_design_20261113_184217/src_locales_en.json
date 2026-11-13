@@ -1,0 +1,63 @@
+{
+  "nav": {
+    "home": "Home", "services": "Services", "packages": "Packages",
+    "about": "About", "contact": "Contact", "agents": "AI Agents",
+    "dashboard": "Dashboard", "login": "Login", "register": "Register",
+    "logout": "Logout", "profile": "Profile", "settings": "Settings"
+  },
+  "hero": {
+    "badge": "Next-Gen AI Platform",
+    "title1": "AI Automation That", "title2": "Helps Your Business", "title3": "Grow Faster",
+    "desc": "Automate leads, customer communication, follow-up, and operations with tailored AI solutions.",
+    "btnStart": "Get Started", "btnPackages": "View Packages",
+    "dashTitle": "Automation Dashboard", "dashSub": "Last 30 days",
+    "liveUsers": "Live Users", "liveOrders": "Live Orders", "chartTitle": "Business Growth", "recentUsers": "Recent Users"
+  },
+  "aboutPage": {
+    "title1": "About", "title2": "DNG Solutions",
+    "intro": "We build AI automation systems that help businesses save time and increase revenue.",
+    "mission": "Our Mission", "missionDesc": "To make artificial intelligence accessible to every business.",
+    "vision": "Our Vision", "visionDesc": "To be the leading AI company in Georgia and the region.",
+    "values": "Our Values", "value1": "Innovation", "value1Desc": "Always seeking new ways.",
+    "value2": "Reliability", "value2Desc": "Security and confidentiality.",
+    "value3": "Quality", "value3Desc": "Premium service always.",
+    "statsUsers": "Users", "statsOrders": "Orders", "statsRating": "Rating"
+  },
+  "services": {
+    "title": "Our Services", "subtitle": "AI-driven solutions to scale your business",
+    "aiAuto": "AI Automation", "aiAutoDesc": "Manage business processes 24/7 with smart algorithms.",
+    "crm": "CRM Integration", "crmDesc": "Connect your customer base and manage relationships automatically.",
+    "leadGen": "Lead Generation", "leadGenDesc": "Capture and process potential clients automatically.",
+    "support": "Customer Support", "supportDesc": "AI chatbots that respond to clients in seconds."
+  },
+  "packages": {
+    "title": "Choose your", "titleAccent": "AI Plan", "monthly": "1 Month", "semiannual": "6 Months", "yearly": "1 Year",
+    "activate": "Activate", "mostPopular": "MOST POPULAR", "premium": "PREMIUM", "unlimited": "UNLIMITED",
+    "billed": "Billed", "features": {
+      "orders100": "100 orders/month", "agent1": "1 AI Agent", "file5mb": "5MB File upload",
+      "orders500": "500 orders/month", "agent4": "4 AI Agents", "file10mb": "10MB File upload", "prioritySupport": "Priority support",
+      "orders2000": "2000 orders/month", "agent7": "7 AI Agents", "file25mb": "25MB File upload", "support247": "24/7 Support",
+      "ordersUnlimited": "Unlimited orders", "agentsAll": "All AI Agents", "file100mb": "100MB File upload", "dedicatedManager": "Dedicated manager"
+    }
+  },
+  "dashboard": {
+    "welcome": "Welcome back,", "overview": "Here is your business overview for today.",
+    "currentPlan": "Current Plan", "timeRemaining": "Time Remaining", "expired": "Expired",
+    "foreverFree": "Forever Free", "ordersProcessed": "Orders Processed",
+    "used": "used", "left": "left", "aiAgents": "AI Agents", "available": "available",
+    "quickActions": "Quick Actions", "startAiChat": "Start AI Chat",
+    "parseOrders": "Parse orders, write emails, analyze data.",
+    "upgradePlan": "Upgrade Plan", "unlockMore": "Unlock more agents, higher limits.",
+    "renewNow": "Renew Now", "expiringSoon": "Expiring Soon", "subscriptionExpired": "Subscription Expired",
+    "renewToRestore": "Your package has expired. Renew to restore access.",
+    "expiresIn": "Your package expires in {{days}} days.",
+    "recentActivity": "Recent Activity"
+  },
+  "checkout": {
+    "secure": "Secure Checkout", "completePayment": "Complete Payment",
+    "secureSubscription": "Secure your subscription to DNG Solutions",
+    "package": "Package", "billingCycle": "Billing Cycle", "totalDue": "Total Due",
+    "payWith": "Pay with Quickpay", "cancel": "Cancel and go back"
+  },
+  "common": { "loading": "Loading...", "days": "Days", "hours": "Hrs", "minutes": "Min" }
+}

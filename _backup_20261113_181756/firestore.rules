@@ -1,0 +1,33 @@
+﻿rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // მომხმარებელს შეუძლია მხოლოდ საკუთარი პროფილის წაკითხვა.
+    // მას არ შეუძლია შეცვალოს package, expiresAt ან lastPaymentId.
+    match /users/{userId} {
+      allow read: if request.auth != null && request.auth.uid == userId;
+      allow create: if request.auth != null && request.auth.uid == userId;
+      allow update: if request.auth != null && request.auth.uid == userId &&
+        !request.resource.data.diff(resource.data).affectedKeys().hasAny(['package', 'expiresAt', 'lastPaymentId']);
+      allow delete: if false;
+    }
+    
+    // შეფასებები (ratings)
+    match /ratings/{ratingId} {
+      allow create: if true; 
+      allow read: if request.auth != null; 
+    }
+
+    // AI ისტორია (მხოლოდ საკუთარი)
+    match /agent_history/{historyId} {
+      allow read: if request.auth != null && resource.data.userId == request.auth.uid;
+      allow create: if request.auth != null;
+    }
+
+    // ტრანზაქციები (მხოლოდ წაკითხვა)
+    match /transactions/{txId} {
+      allow read: if request.auth != null && resource.data.userId == request.auth.uid;
+      allow write: if false; // მხოლოდ ბექენდი წერს
+    }
+  }
+}

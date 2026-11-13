@@ -1,0 +1,6 @@
+Hello from DNG AI!
+This file was created correctly with UTF-8 (no BOM).
+
+Test line 1
+Test line 2
+Test line 3

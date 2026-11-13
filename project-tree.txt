@@ -1,0 +1,152 @@
+PROJECT TREE
+Generated: 2026-11-13 13:29:07
+Files: 104
+======================================================================
+
+[DIR] (root)
+   .gitignore
+   .oxlintrc.json
+
+[DIR] api\agent
+   list.js
+   run.js
+   seed.js
+
+[DIR] api
+   agent-chat.mjs
+   agents.js
+   cron.js
+   parse-order.js
+   quickpay.js
+   quickpay-callback.js
+
+[DIR] (root)
+   api-server.cjs
+   audit-20261113-105855.txt
+   audit-report-20261113-102210.txt
+   check.cjs
+   check-modes.cjs
+   create-fresh-admin.cjs
+   diagnostic.cjs
+   DIAGNOSTIC_REPORT_20261113_024213.txt
+   DIAGNOSTIC_REPORT_20261113_093718.txt
+   dng-fix.ps1
+   dng-fix-report-20261113-125046.txt
+   dng-master-fix.ps1
+   dump-all.ps1
+   firestore.rules
+   force-reset.cjs
+   fullcheck.cjs
+   index.html
+   list-admins.cjs
+   package.json
+   postcss.config.js
+
+[DIR] public
+   favicon.svg
+
+[DIR] (root)
+   README.md
+   reset-pass.cjs
+   scan-project.ps1
+   server.js
+   set-admin.cjs
+   setup.cjs
+   setup-username-admin.cjs
+
+[DIR] src
+   App.css
+   App.jsx
+
+[DIR] src\assets
+   react.svg
+   vite.svg
+
+[DIR] src\components\agents
+   AgentChat.jsx
+
+[DIR] src\components\layout
+   Footer.jsx
+   Navbar.jsx
+
+[DIR] src\components\sections
+   CTASection.jsx
+   FeaturesSection.jsx
+   HeroSection.jsx
+   ReportBanner.jsx
+   StatsSection.jsx
+
+[DIR] src\components\ui
+   Button.jsx
+   Card.jsx
+   CustomCursor.jsx
+   FreeLimitBanner.jsx
+   SectionTitle.jsx
+
+[DIR] src\config
+   agentModes.js
+   agents.js
+   packageFeatures.js
+
+[DIR] src\context
+   AuthContext.jsx
+
+[DIR] src
+   firebase.js
+
+[DIR] src\hooks
+   useAgents.js
+   useFreeTrial.js
+
+[DIR] src
+   i18n.js
+   index.css
+
+[DIR] src\locales
+   en.json
+   ka.json
+   ru.json
+
+[DIR] src
+   main.jsx
+
+[DIR] src\pages
+   About.jsx
+   Admin.jsx
+   AdminAgents.jsx
+   AdminLogin.jsx
+   AgentHistory.jsx
+   Agents.jsx
+   AIAutomation.jsx
+   Checkout.jsx
+   Contact.jsx
+   Dashboard.jsx
+   Diagnostic.jsx
+   Home.jsx
+   Login.jsx
+   NotFound.jsx
+   Packages.jsx
+   Privacy.jsx
+   Profile.jsx
+   Register.jsx
+   Report.jsx
+   Schedules.jsx
+   Services.jsx
+   Settings.jsx
+   Terms.jsx
+
+[DIR] src\utils
+   adminSecurity.js
+   api.js
+   calculator.js
+   currency.js
+   packageTiers.js
+
+[DIR] (root)
+   start.bat
+   start-api.bat
+   start-both.bat
+   start-vite.bat
+   tailwind.config.js
+   vercel.json
+   vite.config.js

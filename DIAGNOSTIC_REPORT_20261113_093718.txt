@@ -1,0 +1,30 @@
+════════════════════════════════════════════════════════════════════
+DNG Solutions — Diagnostic Report
+20261113_093718
+════════════════════════════════════════════════════════════════════
+
+PROJECT STATUS:
+- Frontend: ✅ 100%
+- AI Agents: ✅ 100%
+- Backend: ✅ 100%
+- Firebase: ✅ 100%
+- i18n: ✅ 100%
+- API Key: valid
+
+FIXED: 0
+
+
+WARNINGS: 1
+  ⚠ Key არასწორია ან არააქტიური
+
+CRITICAL: 5
+  ✗ ka.json — INVALID JSON
+  ✗ en.json — INVALID JSON
+  ✗ ru.json — INVALID JSON
+  ✗ Build ჩავარდა
+  ✗ API key ტესტი ჩავარდა: HTTP 401
+
+NEXT STEPS:
+  ✅ All good!
+
+════════════════════════════════════════════════════════════════════

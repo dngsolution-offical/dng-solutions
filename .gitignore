@@ -1,0 +1,46 @@
+# ═══ SECRETS — NEVER COMMIT ═══
+.env
+.env.local
+.env.production
+.env.development
+.env.backup*
+firebase-key.json
+keyoffirbase.json
+newkey.json
+*.pem
+*.p12
+serviceAccountKey.json
+
+# ═══ DEPENDENCIES ═══
+node_modules/
+
+# ═══ BUILD ═══
+dist/
+build/
+.vercel/
+
+# ═══ BACKUPS ═══
+_*_backup_*/
+backups/
+*.backup_*
+_purge_backup_*/
+
+# ═══ CONTEXT/SCAN FILES ═══
+CONTEXT*.txt
+CONTEXT*.md
+site-scan-report.txt
+audit-*.txt
+*-report*.txt
+project-snapshot-*.txt
+DNG-PROJECT-CONTEXT.md
+PROJECT_CODE_DUMP.txt
+PRIORITY_DUMP.txt
+dump-all.ps1
+scan-project.ps1
+
+# ═══ LOGS ═══
+*.log
+
+# ═══ OS ═══
+.DS_Store
+Thumbs.db
