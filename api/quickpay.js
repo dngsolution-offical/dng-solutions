@@ -1,4 +1,46 @@
-// api/quickpay.js — CommonJS
+// api/quickpay.js — TEST MODE: ALL PACKAGES = 0 GEL
+const fs = require('fs');
+const path = require('path');
+
+let admin, db;
+try {
+  admin = require('firebase-admin');
+  
+  if (!admin.apps || admin.apps.length === 0) {
+    let sa = null;
+    try {
+      const kp = path.join(process.cwd(), 'firebase-key.json');
+      if (fs.existsSync(kp)) sa = JSON.parse(fs.readFileSync(kp, 'utf8'));
+    } catch (e) { console.error('[key]', e.message); }
+    
+    if (!sa && process.env.FIREBASE_SERVICE_ACCOUNT) {
+      try { sa = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT); } catch {}
+    }
+    
+    if (sa && sa.project_id) {
+      admin.initializeApp({ credential: admin.credential.cert(sa) });
+    } else {
+      admin.initializeApp({ credential: admin.credential.applicationDefault() });
+    }
+  }
+  db = admin.firestore();
+} catch (e) {
+  console.error('[fb-init]', e.message);
+}
+
+const PACKAGE_NAMES = {
+  basic: 'Basic',
+  gold: 'Gold',
+  diamond: 'Diamond',
+  infinity: 'Infinity',
+};
+
+const BILLING_DAYS = {
+  monthly: 30,
+  semiannual: 180,
+  yearly: 365,
+};
+
 module.exports = async function handler(req, res) {
   res.setHeader('Content-Type', 'application/json');
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -17,69 +59,78 @@ module.exports = async function handler(req, res) {
     } catch { body = {}; }
   }
 
-  const { packageId, billingCycle, userId } = body || {};
+  const { packageId, billingCycle, userId, userEmail } = body || {};
 
-  const prices = {
-    basic: { monthly: 29, semiannual: 79, yearly: 350 },
-    gold: { monthly: 99, semiannual: 249, yearly: 1500 },
-    diamond: { monthly: 279, semiannual: 799, yearly: 5000 },
-    infinity: { monthly: 499, semiannual: 1499, yearly: 9999 },
-  };
-
-  const pkgKey = String(packageId || '').toLowerCase();
-  const amountUSD = prices[pkgKey]?.[billingCycle];
-
-  if (!amountUSD) {
-    return res.status(400).json({ ok: false, error: 'invalid_package' });
+  if (!packageId || !billingCycle || !userId) {
+    return res.status(400).json({ ok: false, error: 'missing_fields', message: 'packageId, billingCycle, userId required' });
   }
 
-  const QUICKPAY_KEY = process.env.QUICKPAY_API_KEY;
-  const QUICKPAY_MERCHANT = process.env.QUICKPAY_MERCHANT_ID;
+  const pkgKey = String(packageId).toLowerCase();
+  const packageName = PACKAGE_NAMES[pkgKey];
 
-  if (!QUICKPAY_KEY || !QUICKPAY_MERCHANT) {
-    return res.status(200).json({
-      ok: true,
-      demo: true,
-      message: 'Quickpay not configured. Demo mode.',
-      amountUSD,
-      amountGEL: Math.round(amountUSD * 2.7),
-    });
+  if (!packageName) {
+    return res.status(400).json({ ok: false, error: 'invalid_package', packageId: pkgKey });
   }
 
-  // Real Quickpay call (if configured)
+  const days = BILLING_DAYS[billingCycle] || 30;
+
+  if (!db) {
+    return res.status(500).json({ ok: false, error: 'database_unavailable' });
+  }
+
+  // ═══ ALWAYS 0 GEL — TEST MODE ═══
+  console.log('[quickpay] 🧪 TEST MODE: activating', packageName, 'for', days, 'days — 0 GEL');
+
   try {
-    const callbackUrl = process.env.VITE_SITE_URL
-      ? `${process.env.VITE_SITE_URL}/api/quickpay-callback`
-      : 'https://dngmind.com/api/quickpay-callback';
+    const expiresAt = new Date();
+    expiresAt.setDate(expiresAt.getDate() + days);
 
-    const response = await fetch('https://api.quickpay.ge/v1/payments', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${QUICKPAY_KEY}`,
-      },
-      body: JSON.stringify({
-        merchant_id: QUICKPAY_MERCHANT,
-        amount: Math.round(amountUSD * 2.7),
-        currency: 'GEL',
-        description: `DNG ${packageId} - ${billingCycle}`,
-        callback_url: callbackUrl,
-        metadata: { userId, packageId, billingCycle },
-      }),
+    const paymentId = `TEST_${Date.now()}_${Math.random().toString(36).substring(2, 10)}`;
+
+    // Update user package
+    await db.collection('users').doc(userId).update({
+      package: packageName,
+      expiresAt: expiresAt,
+      lastPaymentId: paymentId,
+      packageUpdatedAt: admin.firestore.FieldValue.serverTimestamp(),
     });
 
-    if (!response.ok) {
-      const errText = await response.text().catch(() => '');
-      return res.status(502).json({ ok: false, error: 'quickpay_error', detail: errText.slice(0, 200) });
-    }
+    // Log transaction
+    await db.collection('transactions').add({
+      userId,
+      userEmail: userEmail || '',
+      packageId: pkgKey,
+      billingCycle,
+      amount: 0,
+      currency: 'GEL',
+      status: 'test',
+      testMode: true,
+      paymentId,
+      expiresAt,
+      createdAt: admin.firestore.FieldValue.serverTimestamp(),
+    });
 
-    const data = await response.json();
+    console.log('[quickpay] ✅ Activated:', { userId, packageName, days });
+
     return res.status(200).json({
       ok: true,
-      paymentUrl: data.payment_url || data.url,
-      amountUSD,
+      testMode: true,
+      activated: true,
+      package: packageName,
+      packageId: pkgKey,
+      billingCycle,
+      days,
+      expiresAt: expiresAt.toISOString(),
+      amountGEL: 0,
+      paymentId,
+      message: `🧪 Test: ${packageName} activated for ${days} days (0 GEL)`,
     });
   } catch (err) {
-    return res.status(500).json({ ok: false, error: 'quickpay_exception', message: err.message });
+    console.error('[quickpay] Activation failed:', err.message);
+    return res.status(500).json({
+      ok: false,
+      error: 'activation_failed',
+      message: err.message,
+    });
   }
 };
