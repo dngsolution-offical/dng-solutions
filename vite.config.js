@@ -1,4 +1,4 @@
-// vite.config.js — DNG Solutions
+// vite.config.js
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 
@@ -19,16 +19,8 @@ export default defineConfig({
         secure: false,
         configure: (proxy) => {
           proxy.on('error', (err) => console.log('[proxy]', err.message));
-          proxy.on('proxyReq', (proxyReq, req) => {
-            console.log('[proxy]', req.method, req.url);
-          });
         },
       },
     },
-  },
-  build: {
-    target: 'esnext',
-    sourcemap: false,
-    chunkSizeWarningLimit: 1000,
   },
 });

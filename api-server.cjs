@@ -1,4 +1,4 @@
-// api-server.cjs — Local dev API server
+// api-server.cjs — DNG API Server
 require('dotenv').config();
 
 const express = require('express');
@@ -24,12 +24,12 @@ app.get('/health', (req, res) => {
     timestamp: new Date().toISOString(),
     env: {
       hasAnthropicKey: !!process.env.ANTHROPIC_API_KEY,
-      model: process.env.CLAUDE_MODEL || 'claude-3-5-haiku-latest',
+      hasFirebaseKey: fs.existsSync(path.join(process.cwd(), 'firebase-key.json')),
+      testMode: process.env.PAYMENT_TEST_MODE === 'true',
     },
   });
 });
 
-// Load API routes — try .cjs first, then .js
 function loadRoute(routePath, baseName) {
   const apiDir = path.join(__dirname, 'api');
   const candidates = [
@@ -51,29 +51,31 @@ function loadRoute(routePath, baseName) {
       }
 
       app.all(routePath, async (req, res) => {
-        try { await handler(req, res); }
-        catch (err) {
+        try { 
+          await handler(req, res); 
+        } catch (err) {
           console.error(`[api-server] ${routePath} ERROR:`, err.message);
-          if (!res.headersSent) res.status(500).json({ ok: false, error: 'server_error', message: err.message });
+          if (!res.headersSent) {
+            res.status(500).json({ ok: false, error: 'server_error', message: err.message });
+          }
         }
       });
 
-      console.log(`[api-server] OK ${routePath} (${path.basename(filePath)})`);
+      console.log(`[api-server] ✅ ${routePath} (${path.basename(filePath)})`);
       return;
     } catch (err) {
-      console.log(`[api-server] FAIL ${path.basename(filePath)}: ${err.message.slice(0, 80)}`);
+      console.log(`[api-server] ❌ ${path.basename(filePath)}: ${err.message.slice(0, 80)}`);
     }
   }
 
-  console.log(`[api-server] MISSING ${routePath}`);
-  app.all(routePath, (req, res) => res.status(503).json({ ok: false, error: 'not_loaded' }));
+  console.log(`[api-server] ⚠️  MISSING ${routePath}`);
 }
 
 // Load routes
 loadRoute('/api/ai', 'ai');
-loadRoute('/api/parse-order', 'parse-order');
 loadRoute('/api/quickpay', 'quickpay');
 loadRoute('/api/quickpay-callback', 'quickpay-callback');
+loadRoute('/api/parse-order', 'parse-order');
 loadRoute('/api/agent-chat', 'agent-chat');
 loadRoute('/api/export-excel', 'export-excel');
 loadRoute('/api/public-stats', 'public-stats');
@@ -85,9 +87,15 @@ app.use((req, res) => res.status(404).json({ ok: false, error: 'not_found', path
 app.listen(PORT, () => {
   console.log('');
   console.log('═══════════════════════════════════════════════════════════════════════════');
-  console.log(`  DNG API SERVER — http://localhost:${PORT}`);
+  console.log(`  ✅ DNG API SERVER — http://localhost:${PORT}`);
+  console.log('═══════════════════════════════════════════════════════════════════════════');
+  console.log(`  Health: http://localhost:${PORT}/health`);
+  console.log(`  Test Mode: ${process.env.PAYMENT_TEST_MODE === 'true' ? 'ENABLED' : 'DISABLED'}`);
   console.log('═══════════════════════════════════════════════════════════════════════════');
   console.log('');
 });
 
-process.on('SIGINT', () => { console.log('\n[api-server] Shutdown'); process.exit(0); });
+process.on('SIGINT', () => {
+  console.log('\n[api-server] Shutdown');
+  process.exit(0);
+});
