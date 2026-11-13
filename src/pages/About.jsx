@@ -122,26 +122,6 @@ export default function About() {
           </div>
         </motion.div>
 
-        {/* Story / History */}
-        <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="mb-20">
-          <div className="text-center mb-10">
-            <p className="text-xs text-dng-cyan uppercase tracking-widest font-bold mb-2">{t('aboutPage.storyBadge')}</p>
-            <h2 className="text-3xl font-black text-white">{t('aboutPage.storyTitle')}</h2>
-          </div>
-
-          <div className="bg-gradient-to-br from-white/[0.03] to-white/[0.01] border border-white/10 rounded-3xl p-8 sm:p-12 max-w-4xl mx-auto">
-            <p className="text-gray-300 leading-relaxed text-base mb-6">
-              {t('aboutPage.story1')}
-            </p>
-            <p className="text-gray-300 leading-relaxed text-base mb-6">
-              {t('aboutPage.story2')}
-            </p>
-            <p className="text-gray-300 leading-relaxed text-base">
-              {t('aboutPage.story3')}
-            </p>
-          </div>
-        </motion.div>
-
         {/* Timeline */}
         <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}>
           <h2 className="text-3xl font-black text-white text-center mb-10">{t('aboutPage.timelineTitle')}</h2>
