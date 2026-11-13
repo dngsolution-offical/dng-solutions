@@ -17,10 +17,10 @@ const SOCIALS = [
   { name: 'Instagram', handle: '@dng.solutions', url: 'https://www.instagram.com/dng.solutions',
     gradient: 'from-pink-500 via-rose-500 to-orange-500', glow: 'shadow-[0_0_50px_-10px_rgba(236,72,153,0.6)]',
     bg: 'from-pink-500/15 to-transparent', text: 'text-pink-400', border: 'border-pink-500/20', hover: 'hover:border-pink-500/50' },
-  { name: 'TikTok', handle: '@dng.solutions', url: 'https://www.tiktok.com/@dng.solutions',
+  { name: 'TikTok', handle: '@dng.solutions', url: 'https://www.tiktok.com/@dng_solution',
     gradient: 'from-cyan-400 via-slate-200 to-rose-500', glow: 'shadow-[0_0_50px_-10px_rgba(6,182,212,0.6)]',
     bg: 'from-cyan-500/15 to-transparent', text: 'text-cyan-300', border: 'border-cyan-500/20', hover: 'hover:border-cyan-400/50' },
-  { name: 'Facebook', handle: 'DNG Solutions', url: 'https://www.facebook.com/dngsolutions',
+  { name: 'Facebook', handle: 'DNG Solutions', url: 'https://www.facebook.com/profile.php?id=61596586850292',
     gradient: 'from-blue-500 to-blue-600', glow: 'shadow-[0_0_50px_-10px_rgba(59,130,246,0.6)]',
     bg: 'from-blue-500/15 to-transparent', text: 'text-blue-400', border: 'border-blue-500/20', hover: 'hover:border-blue-500/50' },
 ];
