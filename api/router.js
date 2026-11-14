@@ -12,6 +12,8 @@ const ROUTES = {
   'bog-callback': 'bog-callback.js',
   'bog-status': 'bog-status.js',
   'start-trial': 'start-trial.cjs',
+  'admin': 'admin.js',
+  'admin-login': 'admin-login.js',
 };
 
 module.exports = async function handler(req, res) {

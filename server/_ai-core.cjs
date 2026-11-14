@@ -1,3 +1,4 @@
+const { effectiveExpiry } = require('./_plan.cjs');
 // api/_ai-core.cjs — ერთიანი AI ბირთვი: ვებ-ჩატი და ტელეგრამი ერთნაირად მუშაობენ
 const { initializeFirebase } = require('./_firebase.cjs');
 const { AGENTS, LEVELS, DAILY, EXCEL_CONTRACT, FILE_CONTRACT } = require('./_agents.cjs');
@@ -103,7 +104,7 @@ async function runAgent({ uid, agentKey: requested, text, history, image, source
   const userSnap = await db.collection('users').doc(uid).get();
   const user = userSnap.exists ? userSnap.data() : {};
   let pkg = user.package || 'Free';
-  const expMs = (user.expiresAt && user.expiresAt.toMillis && user.expiresAt.toMillis()) || 0;
+  const expMs = effectiveExpiry(user);
   if (pkg !== 'Free' && expMs && expMs < Date.now()) pkg = 'Free';
 
   const agentKey = AGENTS[requested] ? requested : 'standard';
