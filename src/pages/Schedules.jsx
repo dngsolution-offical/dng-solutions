@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
-import { toast, Toaster } from 'react-hot-toast';
+import { toast } from 'react-hot-toast';
 import { useAuth } from '../context/AuthContext';
 import { useFreeTrial } from '../hooks/useFreeTrial';
 import { db } from '../firebase';
@@ -149,7 +149,6 @@ export default function Schedules() {
 
   return (
     <div className="min-h-screen bg-[#050505] pt-32 pb-20 px-4">
-      <Toaster position="top-right" />
       
       <div className="max-w-5xl mx-auto">
         <Link to="/agents" className="inline-flex items-center gap-2 text-gray-500 hover:text-white text-sm mb-6">

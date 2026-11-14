@@ -75,7 +75,7 @@ export const PACKAGE_FEATURES = {
     allowedAgents: [
       'standard', 'support', 'business', 'file', 'excel',
       'finance', 'crypto', 'marketing', 'sales', 'legal',
-      'investing', 'product', 'startup', 'vision', 'thinking',
+      'investing', 'product', 'startup', 'thinking',
       'businessplan', 'pitchdeck', 'contract', 'meeting', 'calculator',
     ],
   },
@@ -102,7 +102,7 @@ export const PACKAGE_FEATURES = {
     allowedAgents: [
       'standard', 'support', 'business', 'file', 'excel', 'code',
       'finance', 'crypto', 'marketing', 'sales', 'legal',
-      'investing', 'product', 'startup', 'vision', 'thinking',
+      'investing', 'product', 'startup', 'thinking',
       'businessplan', 'pitchdeck', 'contract', 'meeting', 'calculator',
       'research', 'competitor',
     ],
@@ -130,7 +130,7 @@ export const PACKAGE_FEATURES = {
     allowedAgents: [
       'standard', 'support', 'business', 'file', 'excel', 'code',
       'finance', 'crypto', 'marketing', 'sales', 'legal',
-      'investing', 'product', 'startup', 'vision', 'thinking',
+      'investing', 'product', 'startup', 'thinking',
       'businessplan', 'pitchdeck', 'contract', 'meeting', 'calculator',
       'research', 'competitor',
     ],

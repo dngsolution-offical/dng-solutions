@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import emailjs from '@emailjs/browser';
-import { toast, Toaster } from 'react-hot-toast';
+import { toast } from 'react-hot-toast';
 
 const CONTACT = {
   email: 'dng.solution01@gmail.com',
@@ -73,7 +73,6 @@ export default function Contact() {
 
   return (
     <div className="min-h-screen bg-[#050505] relative overflow-hidden font-sans selection:bg-dng-cyan/30">
-      <Toaster position="top-center" toastOptions={{ style: { background: '#0A0A0C', color: '#fff', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '14px', padding: '14px 18px' } }} />
 
       <div className="fixed inset-0 pointer-events-none">
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,rgba(37,99,235,0.12),transparent_55%)]" />

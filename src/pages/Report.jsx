@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { db, auth } from '../firebase';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore/lite';
 import emailjs from '@emailjs/browser';
-import { toast, Toaster } from 'react-hot-toast';
+import { toast } from 'react-hot-toast';
 import { Link } from 'react-router-dom';
 
 const Icons = {
@@ -84,7 +84,6 @@ const Report = () => {
   if (submitted) {
     return (
       <div className="min-h-screen bg-[#050505] flex items-center justify-center px-4">
-        <Toaster position="top-center" />
         <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="text-center">
           <div className="w-20 h-20 rounded-full bg-green-500/20 flex items-center justify-center mx-auto mb-6">
             <svg className="w-10 h-10 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" /></svg>
@@ -102,7 +101,6 @@ const Report = () => {
 
   return (
     <div className="min-h-screen bg-[#050505] pt-32 pb-20 px-4 relative overflow-hidden font-sans">
-      <Toaster position="top-center" toastOptions={{ style: { background: '#111', color: '#fff', border: '1px solid rgba(255,255,255,0.1)' } }} />
       
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,rgba(37,99,235,0.08),transparent_50%)] pointer-events-none" />
       <div className="absolute bottom-0 left-1/4 w-[500px] h-[500px] bg-dng-cyan/5 rounded-full blur-[150px] pointer-events-none" />

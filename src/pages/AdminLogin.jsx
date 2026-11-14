@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { toast, Toaster } from 'react-hot-toast';
+import { toast } from 'react-hot-toast';
 
 export default function AdminLogin() {
   const navigate = useNavigate();
@@ -46,9 +46,6 @@ export default function AdminLogin() {
 
   return (
     <div className="min-h-screen bg-[#050505] flex items-center justify-center px-4 relative overflow-hidden">
-      <Toaster position="top-center" toastOptions={{
-        style: { background: '#0A0A0A', color: '#fff', border: '1px solid rgba(255,255,255,0.1)' }
-      }} />
       
       {/* Background glow */}
       <div className="absolute top-1/4 -left-32 w-[500px] h-[500px] bg-dng-blue/20 rounded-full blur-[120px] pointer-events-none" />

@@ -16,7 +16,7 @@ const T = {
     recent: 'ბოლო შეტყობინებები', empty: 'ჯერ შეტყობინებები არ გაქვს.', emptySub: 'დაიწყე ჩატი აგენტთან და აქ გამოჩნდება ისტორია.',
     tryAgents: 'AI აგენტები', openTg: 'ტელეგრამის მართვა', packages: 'პაკეტები',
     welcome: 'მოგესალმები', msgsToday: 'შეტყობინება დღეს',
-    agentNames: { standard: 'ასისტენტი', thinking: 'ღრმა აზროვნება', business: 'ბიზნესი', startup: 'სტარტაპი', finance: 'ფინანსები', crypto: 'კრიპტო', marketing: 'მარკეტინგი', sales: 'გაყიდვები', investing: 'ინვესტიციები', product: 'პროდუქტი', legal: 'იურიდიული', research: 'კვლევა', competitor: 'კონკურენტები', businessplan: 'ბიზნესგეგმა', pitchdeck: 'პიჩდეკი', contract: 'კონტრაქტი', meeting: 'შეხვედრა', calculator: 'კალკულატორი', excel: 'Excel', file: 'ფაილი', code: 'კოდი', vision: 'Vision' },
+    agentNames: { standard: 'ასისტენტი', thinking: 'ღრმა აზროვნება', business: 'ბიზნესი', startup: 'სტარტაპი', finance: 'ფინანსები', crypto: 'კრიპტო', marketing: 'მარკეტინგი', sales: 'გაყიდვები', investing: 'ინვესტიციები', product: 'პროდუქტი', legal: 'იურიდიული', research: 'კვლევა', competitor: 'კონკურენტები', businessplan: 'ბიზნესგეგმა', pitchdeck: 'პიჩდეკი', contract: 'კონტრაქტი', meeting: 'შეხვედრა', calculator: 'კალკულატორი', excel: 'Excel', file: 'ფაილი', code: 'კოდი' },
   },
   en: {
     title: 'Dashboard', sub: 'An overview of your AI usage',
@@ -27,7 +27,7 @@ const T = {
     recent: 'Recent messages', empty: 'No messages yet.', emptySub: 'Start a chat with an agent and your history will show up here.',
     tryAgents: 'AI agents', openTg: 'Manage Telegram', packages: 'Plans',
     welcome: 'Welcome back', msgsToday: 'messages today',
-    agentNames: { standard: 'Assistant', thinking: 'Deep Thinking', business: 'Business', startup: 'Startup', finance: 'Finance', crypto: 'Crypto', marketing: 'Marketing', sales: 'Sales', investing: 'Investing', product: 'Product', legal: 'Legal', research: 'Research', competitor: 'Competitors', businessplan: 'Business Plan', pitchdeck: 'Pitch Deck', contract: 'Contract', meeting: 'Meeting Notes', calculator: 'Calculator', excel: 'Excel', file: 'File', code: 'Code', vision: 'Vision' },
+    agentNames: { standard: 'Assistant', thinking: 'Deep Thinking', business: 'Business', startup: 'Startup', finance: 'Finance', crypto: 'Crypto', marketing: 'Marketing', sales: 'Sales', investing: 'Investing', product: 'Product', legal: 'Legal', research: 'Research', competitor: 'Competitors', businessplan: 'Business Plan', pitchdeck: 'Pitch Deck', contract: 'Contract', meeting: 'Meeting Notes', calculator: 'Calculator', excel: 'Excel', file: 'File', code: 'Code' },
   },
   ru: {
     title: 'Панель', sub: 'Обзор вашего использования AI',
@@ -38,7 +38,7 @@ const T = {
     recent: 'Последние сообщения', empty: 'Сообщений пока нет.', emptySub: 'Начните чат с агентом, и здесь появится история.',
     tryAgents: 'AI агенты', openTg: 'Управление Telegram', packages: 'Пакеты',
     welcome: 'С возвращением', msgsToday: 'сообщений сегодня',
-    agentNames: { standard: 'Ассистент', thinking: 'Глубокое мышление', business: 'Бизнес', startup: 'Стартап', finance: 'Финансы', crypto: 'Крипто', marketing: 'Маркетинг', sales: 'Продажи', investing: 'Инвестиции', product: 'Продукт', legal: 'Юридический', research: 'Исследование', competitor: 'Конкуренты', businessplan: 'Бизнес-план', pitchdeck: 'Питчдек', contract: 'Контракт', meeting: 'Заметки встреч', calculator: 'Калькулятор', excel: 'Excel', file: 'Файл', code: 'Код', vision: 'Vision' },
+    agentNames: { standard: 'Ассистент', thinking: 'Глубокое мышление', business: 'Бизнес', startup: 'Стартап', finance: 'Финансы', crypto: 'Крипто', marketing: 'Маркетинг', sales: 'Продажи', investing: 'Инвестиции', product: 'Продукт', legal: 'Юридический', research: 'Исследование', competitor: 'Конкуренты', businessplan: 'Бизнес-план', pitchdeck: 'Питчдек', contract: 'Контракт', meeting: 'Заметки встреч', calculator: 'Калькулятор', excel: 'Excel', file: 'Файл', code: 'Код' },
   },
 };
 

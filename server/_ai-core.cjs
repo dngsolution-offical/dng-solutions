@@ -116,9 +116,6 @@ async function runAgent({ uid, agentKey: requested, text, history, image, source
   const clean = String(text || '').trim();
   if (!clean && !(image && image.data)) throw new ApiError(400, 'message_required', 'ჩაწერე შეტყობინება');
   if (clean.length > 5000) throw new ApiError(400, 'text_too_long', 'ტექსტი ძალიან გრძელია (მაქს. 5000)');
-  if (agent.kind === 'vision' && !(image && image.data)) {
-    throw new ApiError(400, 'image_required', 'Vision აგენტისთვის ატვირთე სურათი');
-  }
 
   const limit = DAILY[pkg];
   const today = new Date().toISOString().slice(0, 10);
@@ -133,7 +130,8 @@ async function runAgent({ uid, agentKey: requested, text, history, image, source
   if (image && image.data && image.mediaType) {
     userContent.push({ type: 'image', source: { type: 'base64', media_type: image.mediaType, data: image.data } });
   }
-  userContent.push({ type: 'text', text: clean || 'გააანალიზე მიბმული სურათი.' });
+  const fallbackText = agent.kind === 'file' ? 'შექმენი ფაილი მიბმული სურათიდან.' : 'გააანალიზე მიბმული სურათი.';
+  userContent.push({ type: 'text', text: clean || fallbackText });
 
   let system = agent.system;
   if (agent.kind === 'excel') system += EXCEL_CONTRACT;

@@ -43,7 +43,7 @@ const AGENTS_LIST = [
   { name: 'Text Agent',       icon: 'FileText', color: 'blue',   pkg: 'Free' },
   { name: 'Excel Agent',      icon: 'Table',    color: 'green',  pkg: 'Basic' },
   { name: 'Email Agent',      icon: 'Mail',     color: 'cyan',   pkg: 'Basic' },
-  { name: 'Vision Agent',     icon: 'Eye',      color: 'purple', pkg: 'Gold' },
+  { name: 'File Agent',       icon: 'FileText', color: 'purple', pkg: 'Gold' },
   { name: 'Report Agent',     icon: 'Chart',    color: 'yellow', pkg: 'Gold' },
   { name: 'CRM Agent',        icon: 'Users',    color: 'pink',   pkg: 'Gold' },
   { name: 'Schedule Agent',   icon: 'Clock',    color: 'orange', pkg: 'Diamond' },

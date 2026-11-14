@@ -1,7 +1,7 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
 import { AnimatePresence, MotionConfig } from 'framer-motion';
-import { Toaster } from 'react-hot-toast';
+import AppToaster from './components/ui/AppToaster';
 
 import Navbar from './components/layout/Navbar';
 import Footer from './components/layout/Footer';
@@ -90,17 +90,7 @@ export default function App() {
     <MotionConfig reducedMotion="never">
       <Router>
         <AppContent />
-        <Toaster
-          position="top-center"
-          toastOptions={{
-            style: {
-              background: '#111',
-              color: '#fff',
-              border: '1px solid rgba(255,255,255,0.1)',
-              borderRadius: '12px',
-            },
-          }}
-        />
+        <AppToaster />
       </Router>
     </MotionConfig>
   );

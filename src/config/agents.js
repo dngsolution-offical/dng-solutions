@@ -52,7 +52,7 @@ export const PACKAGE_CONFIG = {
     allowedAgents: [
       'standard', 'support', 'business', 'file', 'excel',
       'finance', 'crypto', 'marketing', 'sales', 'legal',
-      'investing', 'product', 'startup', 'vision', 'thinking',
+      'investing', 'product', 'startup', 'thinking',
       'businessplan', 'pitchdeck', 'contract', 'meeting', 'calculator',
     ],
     allowFiles: true,
@@ -74,7 +74,7 @@ export const PACKAGE_CONFIG = {
     allowedAgents: [
       'standard', 'support', 'business', 'file', 'excel', 'code',
       'finance', 'crypto', 'marketing', 'sales', 'legal',
-      'investing', 'product', 'startup', 'vision', 'thinking',
+      'investing', 'product', 'startup', 'thinking',
       'businessplan', 'pitchdeck', 'contract', 'meeting', 'calculator',
       'research', 'competitor',
     ],
@@ -97,7 +97,7 @@ export const PACKAGE_CONFIG = {
     allowedAgents: [
       'standard', 'support', 'business', 'file', 'excel', 'code',
       'finance', 'crypto', 'marketing', 'sales', 'legal',
-      'investing', 'product', 'startup', 'vision', 'thinking',
+      'investing', 'product', 'startup', 'thinking',
       'businessplan', 'pitchdeck', 'contract', 'meeting', 'calculator',
       'research', 'competitor',
     ],
@@ -386,18 +386,6 @@ export const AGENTS = {
     color: 'text-pink-400',
     bg: 'bg-pink-500/10',
     tools: ['create_file'],
-  },
-  vision: {
-    id: 'vision',
-    name: 'Vision',
-    icon: 'Eye',
-    category: 'tools',
-    description: 'Analyze images, PDFs',
-    minPackage: 'Gold',
-    gradient: 'from-purple-500 to-pink-500',
-    color: 'text-purple-400',
-    bg: 'bg-purple-500/10',
-    tools: [],
   },
 };
 

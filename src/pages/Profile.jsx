@@ -6,7 +6,7 @@ import { useTranslation } from 'react-i18next';
 import { useAuth } from '../context/AuthContext';
 import { db } from '../firebase';
 import { doc, getDoc, updateDoc } from 'firebase/firestore/lite';
-import { toast, Toaster } from 'react-hot-toast';
+import { toast } from 'react-hot-toast';
 
 // ─── ICONS ───
 const Icon = ({ d, className = 'w-5 h-5', sw = 2 }) => (
@@ -102,7 +102,6 @@ export default function Profile() {
 
   return (
     <div className="min-h-screen bg-[#050505] pt-24 pb-20 px-4 relative overflow-hidden">
-      <Toaster position="top-center" toastOptions={{ style: { background: '#111', color: '#fff', border: '1px solid rgba(255,255,255,0.1)' } }} />
 
       {/* Background */}
       <div className="pointer-events-none absolute inset-0">

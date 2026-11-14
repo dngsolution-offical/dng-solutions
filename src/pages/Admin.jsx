@@ -1,7 +1,7 @@
 // src/pages/Admin.jsx — ადმინ პანელი: მომხმარებლები, პაკეტები, ვადები, ვიზიტები
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { toast, Toaster } from 'react-hot-toast';
+import { toast } from 'react-hot-toast';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const PACKAGES = ['Free', 'Basic', 'Gold', 'Diamond', 'Infinity'];
@@ -258,7 +258,6 @@ export default function Admin() {
   if (error && !users.length) {
     return (
       <div className="min-h-screen bg-[#050505] flex flex-col items-center justify-center p-6">
-        <Toaster position="top-center" />
         <h1 className="text-2xl font-black text-red-400 mb-3">შეცდომა</h1>
         <p className="text-gray-400 mb-6 text-center max-w-md">{error}</p>
         <div className="flex gap-2">
@@ -280,10 +279,6 @@ export default function Admin() {
 
   return (
     <div className="min-h-screen bg-[#050505] pt-24 pb-20 px-4 relative overflow-hidden">
-      <Toaster
-        position="top-center"
-        toastOptions={{ style: { background: '#0A0A0A', color: '#fff', border: '1px solid rgba(255,255,255,0.1)' } }}
-      />
       <div
         aria-hidden="true"
         className="pointer-events-none absolute -top-40 left-1/2 -translate-x-1/2 w-[700px] h-[400px] rounded-full bg-cyan-600/10 blur-[140px]"

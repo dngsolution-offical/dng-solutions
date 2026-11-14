@@ -4,7 +4,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
 import { signInWithEmailAndPassword, signInWithPopup, GoogleAuthProvider } from 'firebase/auth';
-import { toast, Toaster } from 'react-hot-toast';
+import { toast } from 'react-hot-toast';
 import { auth } from '../firebase';
 import { useAuth } from '../context/AuthContext';
 import { authErrorMessage } from '../utils/authErrors';
@@ -77,7 +77,6 @@ export default function Login() {
 
   return (
     <div className="min-h-screen bg-[#050505] flex items-center justify-center px-4 py-24 relative overflow-hidden">
-      <Toaster position="top-center" toastOptions={{ style: { background: '#111', color: '#fff', border: '1px solid rgba(255,255,255,0.1)' } }} />
       <motion.div animate={{ x: [0, 40, 0], y: [0, -20, 0] }} transition={{ duration: 14, repeat: Infinity }}
         className="absolute top-10 -left-32 w-[460px] h-[460px] bg-blue-600/20 rounded-full blur-[120px] pointer-events-none" />
       <motion.div animate={{ x: [0, -40, 0], y: [0, 20, 0] }} transition={{ duration: 16, repeat: Infinity }}

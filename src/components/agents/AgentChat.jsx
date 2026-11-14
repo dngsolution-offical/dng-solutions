@@ -102,7 +102,6 @@ const AI_AGENTS = [
   { id: 'excel', icon: 'Table', label: 'Excel Generator', desc: 'Create .xlsx files', minPackage: 'Gold', gradient: 'from-green-500 to-emerald-500', color: 'text-green-400', bg: 'bg-green-500/10', category: 'tools' },
   { id: 'file', icon: 'FileText', label: 'File Generator', desc: 'CSV, JSON, MD, TXT', minPackage: 'Gold', gradient: 'from-teal-500 to-cyan-500', color: 'text-teal-400', bg: 'bg-teal-500/10', category: 'tools' },
   { id: 'code', icon: 'Code', label: 'Code Generator', desc: 'React, Python, HTML', minPackage: 'Diamond', gradient: 'from-pink-500 to-rose-500', color: 'text-pink-400', bg: 'bg-pink-500/10', category: 'tools' },
-  { id: 'vision', icon: 'Eye', label: 'Vision', desc: 'Analyze images, PDFs', minPackage: 'Gold', gradient: 'from-purple-500 to-pink-500', color: 'text-purple-400', bg: 'bg-purple-500/10', category: 'tools' },
 ];
 
 // ───────────────────────────────────────────────────────────────────────────
@@ -209,10 +208,10 @@ const SUGGESTIONS = {
     { icon: Icons.Code, text: 'Write a Python script to analyze CSV sales data' },
     { icon: Icons.Code, text: 'Create a responsive landing page in HTML' },
   ],
-  vision: [
-    { icon: Icons.Eye, text: 'Upload a photo — I will extract all text (OCR)' },
-    { icon: Icons.Document, text: 'Upload an invoice — I will extract all details' },
-    { icon: Icons.Chart, text: 'Upload a chart — I will analyze the data' },
+  file: [
+    { icon: Icons.Eye, text: 'Upload a photo of a table and make a CSV from it' },
+    { icon: Icons.Document, text: 'Upload an invoice and make a JSON with all details' },
+    { icon: Icons.FileText, text: 'Upload a handwritten note and make a Markdown file' },
   ],
   thinking: [
     { icon: Icons.Brain, text: 'Should I bootstrap or raise VC funding? Think deeply.' },
@@ -625,7 +624,7 @@ export default function AgentChat({ agent, onClose, onHome }) {
                     <span className="px-2 py-0.5 rounded-md bg-blue-500/10 text-blue-400 text-[10px] font-bold">{AI_AGENTS.length} Agents</span>
                     <span className="px-2 py-0.5 rounded-md bg-emerald-500/10 text-emerald-400 text-[10px] font-bold">Excel</span>
                     <span className="px-2 py-0.5 rounded-md bg-amber-500/10 text-amber-400 text-[10px] font-bold">Research</span>
-                    <span className="px-2 py-0.5 rounded-md bg-purple-500/10 text-purple-400 text-[10px] font-bold">Vision</span>
+                    <span className="px-2 py-0.5 rounded-md bg-purple-500/10 text-purple-400 text-[10px] font-bold">Photo → File</span>
                     <span className="px-2 py-0.5 rounded-md bg-pink-500/10 text-pink-400 text-[10px] font-bold">Code</span>
                     <span className="px-2 py-0.5 rounded-md bg-rose-500/10 text-rose-400 text-[10px] font-bold">Voice</span>
                   </div>
@@ -928,7 +927,7 @@ export default function AgentChat({ agent, onClose, onHome }) {
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={onKeyDown}
               placeholder={
-                activeMode === 'vision' ? 'Upload image or ask a question...' :
+                activeMode === 'file' ? 'Upload a photo and say what file to make...' :
                 activeMode === 'code' ? 'Describe the code you need...' :
                 activeMode === 'excel' ? 'Describe the spreadsheet you need...' :
                 activeMode === 'businessplan' ? 'Describe your business for a full plan...' :
@@ -945,14 +944,14 @@ export default function AgentChat({ agent, onClose, onHome }) {
                 <button
                   type="button"
                   onClick={() => {
-                    if (activeMode !== 'vision' && activeMode !== 'thinking') {
-                      setError('Image upload available in Vision agent');
+                    if (activeMode !== 'file' && activeMode !== 'thinking') {
+                      setError('Photo upload is available in File Generator');
                       return;
                     }
                     fileInputRef.current?.click();
                   }}
                   className={`p-2.5 rounded-xl transition-colors ${
-                    activeMode === 'vision' || activeMode === 'thinking'
+                    activeMode === 'file' || activeMode === 'thinking'
                       ? 'text-gray-400 hover:text-white hover:bg-white/10'
                       : 'text-gray-600 hover:bg-white/5'
                   }`}

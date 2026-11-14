@@ -3,7 +3,7 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { motion } from 'framer-motion';
-import { toast, Toaster } from 'react-hot-toast';
+import { toast } from 'react-hot-toast';
 import { auth } from '../firebase';
 import { useAuth } from '../context/AuthContext';
 
@@ -136,7 +136,6 @@ export default function Telegram() {
 
   return (
     <div className="min-h-screen bg-[#050505] pt-28 pb-24 px-4 relative overflow-hidden">
-      <Toaster position="top-center" toastOptions={{ style: { background: '#111', color: '#fff', border: '1px solid rgba(255,255,255,0.1)' } }} />
       <motion.div animate={{ x: [0, 40, 0], y: [0, -20, 0] }} transition={{ duration: 14, repeat: Infinity }}
         className="absolute top-10 -left-32 w-[460px] h-[460px] bg-blue-600/20 rounded-full blur-[120px] pointer-events-none" />
       <motion.div animate={{ x: [0, -40, 0], y: [0, 20, 0] }} transition={{ duration: 16, repeat: Infinity }}

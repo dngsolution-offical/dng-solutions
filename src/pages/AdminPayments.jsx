@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { db, auth } from '../firebase';
 import { collection, query, where, onSnapshot } from 'firebase/firestore';
 import { motion } from 'framer-motion';
-import { toast, Toaster } from 'react-hot-toast';
+import { toast } from 'react-hot-toast';
 
 const Icons = {
   Bank: () => <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 21h18M3 10h18M5 6l7-3 7 3M4 10v11m16-11v11" /></svg>,
@@ -75,7 +75,6 @@ export default function AdminPayments() {
 
   return (
     <div className="min-h-screen bg-[#050505] p-8">
-      <Toaster position="top-center" />
       <div className="max-w-4xl mx-auto">
         <h1 className="text-3xl font-black text-white mb-2">💰 Payment Requests</h1>
         <p className="text-gray-500 text-sm mb-8">{requests.length} pending</p>
