@@ -1,12 +1,13 @@
 // src/pages/Packages.jsx
 import React, { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../context/AuthContext';
 import { PACKAGES, SAVINGS, formatPrice } from '../config/packagePrices';
 
 const SUPPORTED = ['ka', 'en', 'ru'];
+const TRIAL_KEYS = ['Basic', 'Gold'];
 
 function normalizeLang(value) {
   const code = String(value || 'ka').toLowerCase().split('-')[0];
@@ -31,6 +32,12 @@ const T = {
     compareTitle: 'სრული შედარება',
     compareSub: 'აირჩიეთ პაკეტი თქვენი საჭიროებების მიხედვით',
     note: 'უსაფრთხო გადახდა · პაკეტი გადახდის შემდეგ ავტომატურად გააქტიურდება',
+    trialBtn: 'უფასო 7 დღე',
+    trialNote: 'ერთჯერადი · 7 დღე',
+    trialDone: 'გააქტიურდა! გადამისამართება...',
+    trialUsed: 'ტრიალი უკვე გამოყენებულია',
+    trialActive: 'აქტიური პაკეტი უკვე გაქვთ',
+    trialError: 'შეცდომა, სცადეთ ხელახლა',
     f: {
       orders: 'შეკვეთა თვეში',
       unlimitedOrders: 'შეუზღუდავი შეკვეთა',
@@ -74,6 +81,12 @@ const T = {
     compareTitle: 'Full comparison',
     compareSub: 'Pick the plan that fits your needs',
     note: 'Secure payment · Your plan activates automatically after payment',
+    trialBtn: 'Free 7-day trial',
+    trialNote: 'One-time · 7 days',
+    trialDone: 'Activated! Redirecting...',
+    trialUsed: 'Trial already used',
+    trialActive: 'You already have an active plan',
+    trialError: 'Something went wrong, try again',
     f: {
       orders: 'orders per month',
       unlimitedOrders: 'Unlimited orders',
@@ -117,6 +130,12 @@ const T = {
     compareTitle: 'Полное сравнение',
     compareSub: 'Выберите тариф, который подходит вашим задачам',
     note: 'Безопасная оплата · Тариф активируется автоматически после оплаты',
+    trialBtn: 'Бесплатно 7 дней',
+    trialNote: 'Один раз · 7 дней',
+    trialDone: 'Активировано! Переход...',
+    trialUsed: 'Пробный период уже использован',
+    trialActive: 'У вас уже есть активный тариф',
+    trialError: 'Ошибка, попробуйте снова',
     f: {
       orders: 'заказов в месяц',
       unlimitedOrders: 'Заказы без ограничений',
@@ -246,7 +265,6 @@ export default function Packages() {
 
   return (
     <div className="min-h-screen bg-[#050505] pt-28 pb-24 px-4 sm:px-6 relative overflow-hidden">
-      {/* ფონის ბზინვარება */}
       <motion.div
         animate={{ scale: [1, 1.15, 1], opacity: [0.08, 0.14, 0.08] }}
         transition={{ duration: 10, repeat: Infinity, ease: 'easeInOut' }}
@@ -258,7 +276,6 @@ export default function Packages() {
         className="absolute bottom-0 right-0 w-[480px] h-[380px] bg-violet-600 rounded-full blur-[160px] pointer-events-none"
       />
 
-      {/* ენის გადამრთველი */}
       <div className="absolute top-6 right-4 sm:right-8 z-30 flex items-center gap-1 p-1 rounded-xl bg-white/[0.04] border border-white/10 backdrop-blur-xl">
         {LANGS.map((l) => {
           const isActive = lang === l.code;
@@ -285,7 +302,6 @@ export default function Packages() {
         })}
       </div>
 
-      {/* სათაური */}
       <header className="relative max-w-6xl mx-auto text-center mb-12">
         <motion.span
           initial={{ opacity: 0, y: -8 }}
@@ -324,7 +340,6 @@ export default function Packages() {
           {L.sub}
         </motion.p>
 
-        {/* ციკლის გადამრთველი */}
         <motion.div
           initial={{ opacity: 0, y: 14 }}
           animate={{ opacity: 1, y: 0 }}
@@ -357,7 +372,6 @@ export default function Packages() {
         </motion.div>
       </header>
 
-      {/* პაკეტების ბარათები */}
       <section className="relative max-w-7xl mx-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 lg:gap-6 items-stretch">
         {PACKAGES.map((pkg, i) => (
           <motion.div
@@ -380,7 +394,6 @@ export default function Packages() {
         ))}
       </section>
 
-      {/* შედარების ცხრილი */}
       <section className="relative max-w-5xl mx-auto mt-24">
         <motion.div
           initial={{ opacity: 0, y: 16 }}
@@ -499,7 +512,6 @@ function PlanCard({ pkg, theme, cycle, lang, L, currentUser }) {
         bg-gradient-to-b ${theme.bg} ${theme.border} ${theme.glow} ${theme.ring}
         shadow-xl shadow-black/40 transition-[border-color,box-shadow] duration-500`}
     >
-      {/* ზედა ხაზი */}
       <div className={`absolute inset-x-0 top-0 h-px bg-gradient-to-r ${theme.line}`} />
       <div className={`absolute inset-x-0 top-0 h-24 bg-gradient-to-b ${theme.accent} opacity-[0.07] pointer-events-none`} />
 
@@ -513,7 +525,6 @@ function PlanCard({ pkg, theme, cycle, lang, L, currentUser }) {
 
       <h3 className={`relative text-xl font-black ${theme.text}`}>{pkg.key}</h3>
 
-      {/* ფასი */}
       <div className="relative mt-4 min-h-[4.25rem]">
         <AnimatePresence mode="wait">
           <motion.div
@@ -578,7 +589,73 @@ function PlanCard({ pkg, theme, cycle, lang, L, currentUser }) {
         </span>
         <span className="absolute inset-0 -translate-x-full group-hover/btn:translate-x-full bg-gradient-to-r from-transparent via-white/25 to-transparent transition-transform duration-700 pointer-events-none" />
       </Link>
+
+      {TRIAL_KEYS.includes(pkg.key) && (
+        <TrialButton pkgKey={pkg.key} theme={theme} L={L} currentUser={currentUser} />
+      )}
     </motion.div>
+  );
+}
+
+function TrialButton({ pkgKey, theme, L, currentUser }) {
+  const navigate = useNavigate();
+  const [status, setStatus] = useState('idle');
+  const locked = status === 'loading' || status === 'done' || status === 'used' || status === 'active';
+
+  const start = async () => {
+    if (!currentUser) {
+      navigate('/register');
+      return;
+    }
+    setStatus('loading');
+    try {
+      const token = await currentUser.getIdToken();
+      const res = await fetch('/api/start-trial', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ packageKey: pkgKey }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (res.ok) {
+        setStatus('done');
+        setTimeout(() => navigate('/dashboard'), 1000);
+        return;
+      }
+      if (data.error === 'TRIAL_USED') setStatus('used');
+      else if (data.error === 'ACTIVE_SUB') setStatus('active');
+      else setStatus('error');
+    } catch (e) {
+      setStatus('error');
+    }
+  };
+
+  const labels = {
+    idle: L.trialBtn,
+    loading: '...',
+    done: L.trialDone,
+    used: L.trialUsed,
+    active: L.trialActive,
+    error: L.trialError,
+  };
+  const tone =
+    status === 'done'
+      ? 'text-emerald-300 border-emerald-400/40'
+      : status === 'used' || status === 'active' || status === 'error'
+      ? 'text-amber-300 border-amber-400/30'
+      : `${theme.text} border-white/15 hover:border-white/40`;
+
+  return (
+    <div className="relative mt-3">
+      <button
+        type="button"
+        onClick={start}
+        disabled={locked}
+        className={`w-full py-2.5 rounded-xl border bg-white/[0.02] text-sm font-bold transition-all duration-300 hover:bg-white/[0.05] disabled:cursor-not-allowed ${tone}`}
+      >
+        {labels[status]}
+      </button>
+      {status === 'idle' && <p className="text-center text-[10px] text-gray-600 mt-1.5">{L.trialNote}</p>}
+    </div>
   );
 }
 
