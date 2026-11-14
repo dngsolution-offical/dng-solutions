@@ -1,342 +1,601 @@
-import React, { useRef, useState } from 'react';
-import {
-  motion,
-  AnimatePresence,
-  useScroll,
-  useTransform,
-  useMotionValue,
-  useSpring,
-  useReducedMotion,
-} from 'framer-motion';
+// src/pages/Packages.jsx
+import React, { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { useNavigate, Link } from 'react-router-dom';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../context/AuthContext';
-import CustomPackageModal from '../components/ui/CustomPackageModal';
+import { PACKAGES, SAVINGS, formatPrice } from '../config/packagePrices';
 
-const CYCLES = [
-  { id: 'monthly', months: 1 },
-  { id: 'semiannual', months: 6 },
-  { id: 'yearly', months: 12 },
-];
+const SUPPORTED = ['ka', 'en', 'ru'];
 
-// Same USD prices as Checkout.jsx
-const PLANS = [
-  {
-    id: 'Basic',
-    icon: 'M13 10V3L4 14h7v7l9-11h-7z',
-    prices: { monthly: 29, semiannual: 79, yearly: 350 },
-    features: ['orders100', 'agent1', 'file5mb'],
-    theme: {
-      text: 'text-blue-300',
-      bar: 'from-blue-500 to-cyan-500',
-      iconBg: 'bg-blue-500/15 border-blue-400/30',
-      glow: 'rgba(59,130,246,0.35)',
-      check: 'bg-blue-500/15 text-blue-300',
-    },
-  },
-  {
-    id: 'Gold',
-    icon: 'M3 17l3-10 4 6 2-8 2 8 4-6 3 10H3z',
-    badge: 'mostPopular',
-    featured: true,
-    prices: { monthly: 99, semiannual: 249, yearly: 1500 },
-    features: ['orders500', 'agent4', 'file10mb', 'prioritySupport'],
-    theme: {
-      text: 'text-amber-300',
-      bar: 'from-amber-400 to-orange-500',
-      iconBg: 'bg-amber-500/15 border-amber-400/30',
-      glow: 'rgba(245,158,11,0.35)',
-      check: 'bg-amber-500/15 text-amber-300',
-    },
-  },
-  {
-    id: 'Diamond',
-    icon: 'M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z',
-    badge: 'premium',
-    prices: { monthly: 279, semiannual: 799, yearly: 5000 },
-    features: ['orders2000', 'agent7', 'file25mb', 'support247'],
-    theme: {
-      text: 'text-purple-300',
-      bar: 'from-purple-500 to-pink-500',
-      iconBg: 'bg-purple-500/15 border-purple-400/30',
-      glow: 'rgba(168,85,247,0.35)',
-      check: 'bg-purple-500/15 text-purple-300',
-    },
-  },
-  {
-    id: 'Infinity',
-    icon: 'M18.178 8c5.096 0 5.096 8 0 8-5.095 0-7.133-8-12.739-8-4.585 0-4.585 8 0 8 5.606 0 7.644-8 12.74-8z',
-    badge: 'unlimited',
-    prices: { monthly: 999, semiannual: 1499, yearly: 9999 },
-    features: ['ordersUnlimited', 'agentsAll', 'file100mb', 'dedicatedManager'],
-    theme: {
-      text: 'text-cyan-300',
-      bar: 'from-emerald-400 to-teal-500',
-      iconBg: 'bg-emerald-500/15 border-emerald-400/30',
-      glow: 'rgba(16,185,129,0.35)',
-      check: 'bg-emerald-500/15 text-emerald-300',
-    },
-  },
-];
-
-const RATE = { en: 1, ka: 2.7, ru: 90 };
-
-function fmt(usd, lang) {
-  const v = Math.round(usd * (RATE[lang] || RATE.ka));
-  if (lang === 'en') return `$${v.toLocaleString('en-US')}`;
-  if (lang === 'ru') return `${v.toLocaleString('ru-RU')} ₽`;
-  return `₾${v.toLocaleString('ka-GE')}`;
+function normalizeLang(value) {
+  const code = String(value || 'ka').toLowerCase().split('-')[0];
+  return SUPPORTED.includes(code) ? code : 'ka';
 }
 
-function PlanCard({ plan, cycle, lang, t, onActivate, reduce, index }) {
-  const ref = useRef(null);
-  const mx = useMotionValue(0.5);
-  const my = useMotionValue(0.5);
-  const sx = useSpring(mx, { stiffness: 180, damping: 18 });
-  const sy = useSpring(my, { stiffness: 180, damping: 18 });
-  const rotY = useTransform(sx, [0, 1], [-10, 10]);
-  const rotX = useTransform(sy, [0, 1], [9, -9]);
-  const glow = useTransform(
-    [sx, sy],
-    ([x, y]) => `radial-gradient(420px circle at ${x * 100}% ${y * 100}%, ${plan.theme.glow}, transparent 60%)`
-  );
+const T = {
+  ka: {
+    badge: 'ფასები',
+    title: 'აირჩიეთ თქვენი',
+    accent: 'AI პაკეტი',
+    sub: 'ყველა პაკეტში შედის AI აგენტები. Telegram ბოტების მხარდაჭერა იწყება Diamond პაკეტიდან.',
+    monthly: '1 თვე',
+    semiannual: '6 თვე',
+    yearly: '1 წელი',
+    save: 'დაზოგეთ',
+    activate: 'გააქტიურება',
+    popular: 'ყველაზე პოპულარული',
+    premium: 'პრემიუმი',
+    perMonth: '/თვეში',
+    featTitle: 'რას მოიცავს',
+    compareTitle: 'სრული შედარება',
+    compareSub: 'აირჩიეთ პაკეტი თქვენი საჭიროებების მიხედვით',
+    note: 'უსაფრთხო გადახდა · პაკეტი გადახდის შემდეგ ავტომატურად გააქტიურდება',
+    f: {
+      orders: 'შეკვეთა თვეში',
+      unlimitedOrders: 'შეუზღუდავი შეკვეთა',
+      unlimited: 'შეუზღუდავი',
+      agents: 'სპეციალიზებული AI აგენტი',
+      storage: 'ფაილის ატვირთვის ლიმიტი',
+      telegram: 'დაკავშირებადი Telegram ბოტი',
+      priority: 'პრიორიტეტული მხარდაჭერა',
+      support247: '24/7 ცოცხალი მხარდაჭერა',
+      manager: 'პერსონალური ანგარიშის მენეჯერი',
+      noTelegram: 'Telegram ბოტის გარეშე',
+      orderRow: 'შეკვეთა თვეში',
+      agentRow: 'AI აგენტი',
+      storageRow: 'ფაილის ატვირთვა',
+      priorityRow: 'პრიორიტეტული მხარდაჭერა',
+      supportRow: '24/7 მხარდაჭერა',
+      telegramRow: 'Telegram ბოტი',
+      managerRow: 'პერსონალური მენეჯერი',
+    },
+    detail: {
+      Basic: 'საწყისი დონე მცირე ბიზნესისთვის. 4 AI აგენტი ამუშავებს შეკვეთებს და ზოგავს დროს. Telegram ბოტი არ შედის.',
+      Gold: 'გაფართოებული პაკეტი მზარდი ბიზნესისთვის — 7 AI აგენტი, მეტი ლიმიტი და პრიორიტეტული მხარდაჭერა.',
+      Diamond: 'სრული ავტომატიზაცია: 21 AI აგენტი და 3 Telegram ბოტი, რომლებიც 24/7 პასუხობენ კლიენტებს.',
+      Infinity: 'ყველაფერი შეუზღუდავი — შეკვეთები, ფაილები, 21 AI აგენტი, 10 Telegram ბოტი და პირადი მენეჯერი.',
+    },
+  },
+  en: {
+    badge: 'Pricing',
+    title: 'Choose your',
+    accent: 'AI Plan',
+    sub: 'Every plan includes AI agents. Telegram bot support starts from the Diamond plan.',
+    monthly: '1 Month',
+    semiannual: '6 Months',
+    yearly: '1 Year',
+    save: 'Save',
+    activate: 'Activate',
+    popular: 'Most Popular',
+    premium: 'Premium',
+    perMonth: '/mo',
+    featTitle: "What's included",
+    compareTitle: 'Full comparison',
+    compareSub: 'Pick the plan that fits your needs',
+    note: 'Secure payment · Your plan activates automatically after payment',
+    f: {
+      orders: 'orders per month',
+      unlimitedOrders: 'Unlimited orders',
+      unlimited: 'Unlimited',
+      agents: 'specialized AI agents',
+      storage: 'file upload limit',
+      telegram: 'connectable Telegram bots',
+      priority: 'Priority support',
+      support247: '24/7 live support',
+      manager: 'Dedicated account manager',
+      noTelegram: 'No Telegram bot',
+      orderRow: 'Orders per month',
+      agentRow: 'AI agents',
+      storageRow: 'File upload',
+      priorityRow: 'Priority support',
+      supportRow: '24/7 support',
+      telegramRow: 'Telegram bots',
+      managerRow: 'Personal manager',
+    },
+    detail: {
+      Basic: 'An entry-level plan for small businesses. 4 AI agents handle orders and save time. Telegram bot is not included.',
+      Gold: 'An expanded plan for growing businesses: 7 AI agents, higher limits and priority support.',
+      Diamond: 'Full automation: all 21 AI agents plus 3 Telegram bots that answer customers 24/7.',
+      Infinity: 'Everything unlimited: orders, storage, all 21 AI agents, 10 Telegram bots and a personal manager.',
+    },
+  },
+  ru: {
+    badge: 'Тарифы',
+    title: 'Выберите свой',
+    accent: 'AI тариф',
+    sub: 'Каждый тариф включает AI агентов. Поддержка Telegram-ботов начинается с тарифа Diamond.',
+    monthly: '1 месяц',
+    semiannual: '6 месяцев',
+    yearly: '1 год',
+    save: 'Экономия',
+    activate: 'Активировать',
+    popular: 'Популярный',
+    premium: 'Премиум',
+    perMonth: '/мес',
+    featTitle: 'Что входит',
+    compareTitle: 'Полное сравнение',
+    compareSub: 'Выберите тариф, который подходит вашим задачам',
+    note: 'Безопасная оплата · Тариф активируется автоматически после оплаты',
+    f: {
+      orders: 'заказов в месяц',
+      unlimitedOrders: 'Заказы без ограничений',
+      unlimited: 'Без лимита',
+      agents: 'специализированных AI агентов',
+      storage: 'лимит загрузки файлов',
+      telegram: 'подключаемых Telegram-ботов',
+      priority: 'Приоритетная поддержка',
+      support247: 'Поддержка 24/7',
+      manager: 'Персональный менеджер аккаунта',
+      noTelegram: 'Без Telegram-бота',
+      orderRow: 'Заказов в месяц',
+      agentRow: 'AI агенты',
+      storageRow: 'Загрузка файлов',
+      priorityRow: 'Приоритетная поддержка',
+      supportRow: 'Поддержка 24/7',
+      telegramRow: 'Telegram-боты',
+      managerRow: 'Персональный менеджер',
+    },
+    detail: {
+      Basic: 'Стартовый тариф для малого бизнеса. 4 AI агента обрабатывают заказы и экономят время. Telegram-бот не входит.',
+      Gold: 'Расширенный тариф для растущего бизнеса: 7 AI агентов, увеличенные лимиты и приоритетная поддержка.',
+      Diamond: 'Полная автоматизация: все 21 AI агент и 3 Telegram-бота, которые отвечают клиентам 24/7.',
+      Infinity: 'Всё без ограничений: заказы, файлы, все 21 AI агент, 10 Telegram-ботов и персональный менеджер.',
+    },
+  },
+};
 
-  const { scrollYProgress } = useScroll({ target: ref, offset: ['start 95%', 'end 45%'] });
-  const enterRot = useTransform(scrollYProgress, [0, 1], reduce ? [0, 0] : [45, 0]);
-  const enterY = useTransform(scrollYProgress, [0, 1], reduce ? [0, 0] : [120, 0]);
-  const enterScale = useTransform(scrollYProgress, [0, 1], [0.88, 1]);
-  const enterOp = useTransform(scrollYProgress, [0, 0.35], [0, 1]);
+const PACKAGE_THEME = {
+  Basic: {
+    accent: 'from-cyan-500 to-blue-500',
+    text: 'text-cyan-300',
+    border: 'border-cyan-400/20 hover:border-cyan-400/60',
+    glow: 'hover:shadow-[0_25px_70px_-20px_rgba(34,211,238,0.45)]',
+    bg: 'from-cyan-950/40 to-[#0A0A0C]/95',
+    line: 'from-transparent via-cyan-400 to-transparent',
+    check: 'text-cyan-400',
+    ring: '',
+  },
+  Gold: {
+    accent: 'from-amber-500 to-yellow-400',
+    text: 'text-amber-300',
+    border: 'border-amber-400/20 hover:border-amber-400/60',
+    glow: 'hover:shadow-[0_25px_70px_-20px_rgba(245,158,11,0.45)]',
+    bg: 'from-amber-950/40 to-[#0A0A0C]/95',
+    line: 'from-transparent via-amber-400 to-transparent',
+    check: 'text-amber-400',
+    ring: '',
+  },
+  Diamond: {
+    accent: 'from-sky-400 to-indigo-500',
+    text: 'text-sky-300',
+    border: 'border-sky-400/30 hover:border-sky-400/70',
+    glow: 'hover:shadow-[0_25px_70px_-20px_rgba(56,189,248,0.5)]',
+    bg: 'from-sky-950/40 to-[#0A0A0C]/95',
+    line: 'from-transparent via-sky-400 to-transparent',
+    check: 'text-sky-400',
+    ring: 'ring-1 ring-sky-400/40 shadow-[0_0_60px_-15px_rgba(56,189,248,0.45)]',
+  },
+  Infinity: {
+    accent: 'from-violet-500 to-fuchsia-500',
+    text: 'text-violet-300',
+    border: 'border-violet-400/30 hover:border-violet-400/70',
+    glow: 'hover:shadow-[0_25px_70px_-20px_rgba(139,92,246,0.5)]',
+    bg: 'from-violet-950/40 to-[#0A0A0C]/95',
+    line: 'from-transparent via-violet-400 to-transparent',
+    check: 'text-violet-400',
+    ring: '',
+  },
+};
 
-  const handleMove = (e) => {
-    const r = e.currentTarget.getBoundingClientRect();
-    mx.set((e.clientX - r.left) / r.width);
-    my.set((e.clientY - r.top) / r.height);
-  };
-  const handleLeave = () => { mx.set(0.5); my.set(0.5); };
+const CYCLES = ['monthly', 'semiannual', 'yearly'];
+const LANGS = [
+  { code: 'ka', label: 'ქა' },
+  { code: 'en', label: 'EN' },
+  { code: 'ru', label: 'RU' },
+];
 
-  const months = CYCLES.find((c) => c.id === cycle).months;
-  const price = plan.prices[cycle];
-  const perMonth = price / months;
+function ordersText(pkg, L) {
+  const n = String(pkg.orders).match(/\d[\d,]*/);
+  return n ? `${n[0]} ${L.f.orders}` : L.f.unlimitedOrders;
+}
 
-  const card = (
-    <motion.div
-      onMouseMove={reduce ? undefined : handleMove}
-      onMouseLeave={reduce ? undefined : handleLeave}
-      style={reduce ? undefined : { rotateX: rotX, rotateY: rotY, transformStyle: 'preserve-3d' }}
-      className="relative h-full flex flex-col rounded-3xl bg-[#0a0a0f]/95 border border-white/10 p-7 overflow-hidden"
+function ordersCell(pkg, L) {
+  const n = String(pkg.orders).match(/\d[\d,]*/);
+  return n ? n[0] : L.f.unlimited;
+}
+
+function Icon({ d, className = '' }) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+      aria-hidden="true"
     >
-      <motion.div aria-hidden className="absolute inset-0 pointer-events-none" style={{ background: glow }} />
-      <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/25 to-transparent" />
+      <path d={d} />
+    </svg>
+  );
+}
 
-      {plan.badge && (
-        <span className={`absolute top-5 right-5 px-3 py-1 rounded-full text-[10px] font-black tracking-widest text-white bg-gradient-to-r ${plan.theme.bar}`} style={{ transform: 'translateZ(40px)' }}>
-          {t(`packages.${plan.badge}`)}
+const CHECK = 'M20 6 9 17l-5-5';
+const CROSS = 'M18 6 6 18M6 6l12 12';
+const ARROW = 'M5 12h14M12 5l7 7-7 7';
+
+export default function Packages() {
+  const { i18n } = useTranslation();
+  const { currentUser } = useAuth();
+  const [lang, setLang] = useState(() => normalizeLang(i18n.language));
+  const [cycle, setCycle] = useState('monthly');
+  const L = T[lang];
+
+  useEffect(() => {
+    setLang(normalizeLang(i18n.language));
+  }, [i18n.language]);
+
+  const changeLang = (code) => {
+    setLang(code);
+    if (normalizeLang(i18n.language) !== code) {
+      i18n.changeLanguage(code);
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-[#050505] pt-28 pb-24 px-4 sm:px-6 relative overflow-hidden">
+      {/* ფონის ბზინვარება */}
+      <motion.div
+        animate={{ scale: [1, 1.15, 1], opacity: [0.08, 0.14, 0.08] }}
+        transition={{ duration: 10, repeat: Infinity, ease: 'easeInOut' }}
+        className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[480px] bg-cyan-600 rounded-full blur-[170px] pointer-events-none"
+      />
+      <motion.div
+        animate={{ scale: [1, 1.2, 1], opacity: [0.06, 0.12, 0.06] }}
+        transition={{ duration: 12, repeat: Infinity, ease: 'easeInOut', delay: 1 }}
+        className="absolute bottom-0 right-0 w-[480px] h-[380px] bg-violet-600 rounded-full blur-[160px] pointer-events-none"
+      />
+
+      {/* ენის გადამრთველი */}
+      <div className="absolute top-6 right-4 sm:right-8 z-30 flex items-center gap-1 p-1 rounded-xl bg-white/[0.04] border border-white/10 backdrop-blur-xl">
+        {LANGS.map((l) => {
+          const isActive = lang === l.code;
+          return (
+            <button
+              key={l.code}
+              type="button"
+              onClick={() => changeLang(l.code)}
+              aria-pressed={isActive}
+              className={`relative px-3 py-1.5 rounded-lg text-xs font-bold transition-colors duration-300 ${
+                isActive ? 'text-black' : 'text-gray-400 hover:text-white'
+              }`}
+            >
+              {isActive && (
+                <motion.span
+                  layoutId="langPill"
+                  className="absolute inset-0 rounded-lg bg-gradient-to-r from-cyan-300 to-blue-400"
+                  transition={{ type: 'spring', stiffness: 450, damping: 30 }}
+                />
+              )}
+              <span className="relative z-10">{l.label}</span>
+            </button>
+          );
+        })}
+      </div>
+
+      {/* სათაური */}
+      <header className="relative max-w-6xl mx-auto text-center mb-12">
+        <motion.span
+          initial={{ opacity: 0, y: -8 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+          className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-cyan-400/30 bg-cyan-400/10 text-cyan-300 text-[11px] font-bold tracking-widest uppercase"
+        >
+          <span className="w-1.5 h-1.5 rounded-full bg-cyan-300 animate-pulse" />
+          {L.badge}
+        </motion.span>
+
+        <motion.h1
+          key={`title-${lang}`}
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6 }}
+          className="mt-5 text-4xl sm:text-5xl md:text-6xl font-black text-white tracking-tight"
+        >
+          {L.title}{' '}
+          <motion.span
+            animate={{ backgroundPosition: ['0% 50%', '200% 50%'] }}
+            transition={{ duration: 5, repeat: Infinity, ease: 'linear' }}
+            className="inline-block bg-gradient-to-r from-blue-400 via-cyan-300 to-violet-400 bg-clip-text text-transparent bg-[length:200%_auto]"
+          >
+            {L.accent}
+          </motion.span>
+        </motion.h1>
+
+        <motion.p
+          key={`sub-${lang}`}
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.1 }}
+          className="mt-4 text-gray-400 max-w-2xl mx-auto text-sm sm:text-base leading-relaxed"
+        >
+          {L.sub}
+        </motion.p>
+
+        {/* ციკლის გადამრთველი */}
+        <motion.div
+          initial={{ opacity: 0, y: 14 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.2 }}
+          className="inline-flex mt-8 p-1.5 rounded-2xl bg-white/[0.04] border border-white/10 backdrop-blur-xl shadow-2xl shadow-black/60"
+        >
+          {CYCLES.map((c) => {
+            const isActive = cycle === c;
+            return (
+              <button
+                key={c}
+                type="button"
+                onClick={() => setCycle(c)}
+                aria-pressed={isActive}
+                className={`relative px-4 sm:px-6 py-2.5 rounded-xl text-sm font-bold transition-colors duration-300 ${
+                  isActive ? 'text-black' : 'text-gray-400 hover:text-white'
+                }`}
+              >
+                {isActive && (
+                  <motion.span
+                    layoutId="cyclePill"
+                    className="absolute inset-0 rounded-xl bg-gradient-to-r from-white via-cyan-100 to-white shadow-[0_0_28px_rgba(34,211,238,0.5)]"
+                    transition={{ type: 'spring', stiffness: 450, damping: 32 }}
+                  />
+                )}
+                <span className="relative z-10">{L[c]}</span>
+              </button>
+            );
+          })}
+        </motion.div>
+      </header>
+
+      {/* პაკეტების ბარათები */}
+      <section className="relative max-w-7xl mx-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 lg:gap-6 items-stretch">
+        {PACKAGES.map((pkg, i) => (
+          <motion.div
+            key={pkg.key}
+            initial={{ opacity: 0, y: 28 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: '-60px' }}
+            transition={{ duration: 0.55, delay: i * 0.1, ease: [0.22, 1, 0.36, 1] }}
+            className={pkg.popular || pkg.premium ? 'lg:-mt-4 lg:mb-4' : ''}
+          >
+            <PlanCard
+              pkg={pkg}
+              theme={PACKAGE_THEME[pkg.key]}
+              cycle={cycle}
+              lang={lang}
+              L={L}
+              currentUser={currentUser}
+            />
+          </motion.div>
+        ))}
+      </section>
+
+      {/* შედარების ცხრილი */}
+      <section className="relative max-w-5xl mx-auto mt-24">
+        <motion.div
+          initial={{ opacity: 0, y: 16 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.5 }}
+          className="text-center mb-8"
+        >
+          <h2 className="text-2xl sm:text-3xl font-black text-white">{L.compareTitle}</h2>
+          <p className="mt-2 text-gray-500 text-sm">{L.compareSub}</p>
+        </motion.div>
+
+        <div className="overflow-x-auto rounded-3xl border border-white/10 bg-[#0A0A0C]/70 backdrop-blur-xl shadow-2xl shadow-black/50">
+          <table className="w-full text-sm min-w-[560px]">
+            <thead>
+              <tr className="border-b border-white/10">
+                <th className="text-left text-gray-500 font-medium px-5 py-4" />
+                {PACKAGES.map((p) => (
+                  <th
+                    key={p.key}
+                    className={`px-4 py-4 text-center font-black text-base ${PACKAGE_THEME[p.key].text} ${
+                      p.popular || p.premium ? 'bg-white/[0.03]' : ''
+                    }`}
+                  >
+                    {p.key}
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              <Row label={L.f.orderRow} values={PACKAGES.map((p) => ordersCell(p, L))} />
+              <Row label={L.f.agentRow} values={PACKAGES.map((p) => String(p.agents))} />
+              <Row label={L.f.storageRow} values={PACKAGES.map((p) => p.storage)} />
+              <Row label={L.f.priorityRow} values={PACKAGES.map((p) => p.key !== 'Basic')} isBool />
+              <Row label={L.f.supportRow} values={PACKAGES.map((p) => p.key === 'Diamond' || p.key === 'Infinity')} isBool />
+              <Row
+                label={L.f.telegramRow}
+                values={PACKAGES.map((p) => (p.telegram > 0 ? String(p.telegram) : null))}
+                isHighlight
+              />
+              <Row label={L.f.managerRow} values={PACKAGES.map((p) => p.key === 'Infinity')} isBool isLast />
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <motion.p
+        initial={{ opacity: 0 }}
+        whileInView={{ opacity: 1 }}
+        viewport={{ once: true }}
+        className="relative text-center text-gray-600 text-xs mt-12"
+      >
+        {L.note}
+      </motion.p>
+    </div>
+  );
+}
+
+function Row({ label, values, isBool, isHighlight, isLast }) {
+  return (
+    <tr className={`${isLast ? '' : 'border-b border-white/5'} hover:bg-white/[0.02] transition-colors duration-300`}>
+      <td className="px-5 py-3.5 text-gray-400 text-[13px]">{label}</td>
+      {values.map((v, i) => (
+        <td key={i} className="px-4 py-3.5 text-center text-[13px]">
+          {isBool ? (
+            v ? (
+              <motion.span
+                initial={{ scale: 0 }}
+                whileInView={{ scale: 1 }}
+                viewport={{ once: true }}
+                transition={{ type: 'spring', stiffness: 400, damping: 20 }}
+                className="inline-block"
+              >
+                <Icon d={CHECK} className="w-4 h-4 mx-auto text-emerald-400" />
+              </motion.span>
+            ) : (
+              <Icon d={CROSS} className="w-3.5 h-3.5 mx-auto text-gray-700" />
+            )
+          ) : v === null ? (
+            <span className="text-gray-700">—</span>
+          ) : isHighlight ? (
+            <span className="text-cyan-300 font-bold">{v}</span>
+          ) : (
+            <span className="font-semibold text-white">{v}</span>
+          )}
+        </td>
+      ))}
+    </tr>
+  );
+}
+
+function PlanCard({ pkg, theme, cycle, lang, L, currentUser }) {
+  const price = pkg.prices[cycle];
+  const savingPct = cycle === 'monthly' ? 0 : SAVINGS[cycle][pkg.key];
+  const months = cycle === 'semiannual' ? 6 : cycle === 'yearly' ? 12 : 1;
+  const perMonth = Math.round(price / months);
+  const badge = pkg.popular ? L.popular : pkg.premium ? L.premium : null;
+
+  const features = [
+    { text: ordersText(pkg, L), on: true },
+    { text: `${pkg.agents} ${L.f.agents}`, on: true },
+    { text: `${pkg.storage} ${L.f.storage}`, on: true },
+    { text: L.f.priority, on: pkg.key !== 'Basic' },
+    { text: L.f.support247, on: pkg.key === 'Diamond' || pkg.key === 'Infinity' },
+    { text: L.f.manager, on: pkg.key === 'Infinity' },
+    pkg.telegram > 0
+      ? { text: `${pkg.telegram} ${L.f.telegram}`, on: true, highlight: true }
+      : { text: L.f.noTelegram, on: false },
+  ];
+
+  return (
+    <motion.div
+      whileHover={{ y: -6 }}
+      transition={{ type: 'spring', stiffness: 300, damping: 22 }}
+      className={`group relative h-full overflow-hidden rounded-3xl p-6 flex flex-col backdrop-blur-2xl border
+        bg-gradient-to-b ${theme.bg} ${theme.border} ${theme.glow} ${theme.ring}
+        shadow-xl shadow-black/40 transition-[border-color,box-shadow] duration-500`}
+    >
+      {/* ზედა ხაზი */}
+      <div className={`absolute inset-x-0 top-0 h-px bg-gradient-to-r ${theme.line}`} />
+      <div className={`absolute inset-x-0 top-0 h-24 bg-gradient-to-b ${theme.accent} opacity-[0.07] pointer-events-none`} />
+
+      {badge && (
+        <span
+          className={`absolute top-4 right-4 px-2.5 py-0.5 rounded-full bg-gradient-to-r ${theme.accent} text-black text-[10px] font-black uppercase tracking-wide shadow-lg`}
+        >
+          {badge}
         </span>
       )}
 
-      <div className="relative" style={{ transform: 'translateZ(30px)' }}>
-        <div className={`w-14 h-14 rounded-2xl border flex items-center justify-center mb-6 ${plan.theme.iconBg} ${plan.theme.text}`}>
-          <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d={plan.icon} />
-          </svg>
-        </div>
-        <h3 className="text-2xl font-black text-white">{plan.id}</h3>
+      <h3 className={`relative text-xl font-black ${theme.text}`}>{pkg.key}</h3>
 
-        <div className="mt-5 flex items-end gap-2 h-16">
-          <AnimatePresence mode="wait">
-            <motion.span
-              key={`${plan.id}-${cycle}-${lang}`}
-              initial={{ opacity: 0, y: 14, filter: 'blur(6px)' }}
-              animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
-              exit={{ opacity: 0, y: -14, filter: 'blur(6px)' }}
-              transition={{ duration: 0.3 }}
-              className="text-5xl font-black text-white tracking-tight tabular-nums"
-            >
-              {fmt(price, lang)}
-            </motion.span>
-          </AnimatePresence>
-          <span className="text-sm text-gray-500 pb-2">/ {t(`packages.${cycle}`)}</span>
-        </div>
-        <p className={`text-xs text-gray-500 h-4 mt-1 ${months > 1 ? '' : 'invisible'}`}>
-          ≈ {fmt(perMonth, lang)} / {t('packages.monthly')}
-        </p>
+      {/* ფასი */}
+      <div className="relative mt-4 min-h-[4.25rem]">
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={`${cycle}-${lang}`}
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -8 }}
+            transition={{ duration: 0.22 }}
+          >
+            <div className="text-3xl sm:text-[2rem] font-black text-white leading-none">
+              {formatPrice(price, lang)}
+            </div>
+            {cycle !== 'monthly' && (
+              <div className="text-gray-500 text-xs mt-1.5">
+                {formatPrice(perMonth, lang)}
+                {L.perMonth}
+              </div>
+            )}
+          </motion.div>
+        </AnimatePresence>
       </div>
 
-      <div className="my-6 h-px bg-gradient-to-r from-transparent via-white/10 to-transparent" />
-
-      <ul className="space-y-3.5 flex-1" style={{ transform: 'translateZ(20px)' }}>
-        {plan.features.map((f, i) => (
-          <motion.li
-            key={f}
-            initial={{ opacity: 0, x: -10 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            viewport={{ once: true }}
-            transition={{ delay: 0.05 * i }}
-            className="flex items-start gap-3 text-sm text-gray-300"
+      <div className="relative mt-3 mb-5 h-6">
+        {savingPct > 0 && (
+          <motion.span
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="inline-block px-2 py-0.5 rounded-md bg-emerald-400/10 border border-emerald-400/25 text-emerald-300 text-[11px] font-bold"
           >
-            <span className={`mt-0.5 w-5 h-5 rounded-full flex items-center justify-center shrink-0 ${plan.theme.check}`}>
-              <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 13l4 4L19 7" />
-              </svg>
-            </span>
-            {t(`packages.features.${f}`)}
-          </motion.li>
-        ))}
-      </ul>
+            {L.save} {savingPct}%
+          </motion.span>
+        )}
+      </div>
 
-      <motion.button
-        type="button"
-        onClick={onActivate}
-        whileHover={{ scale: 1.02 }}
-        whileTap={{ scale: 0.97 }}
-        className={`mt-8 w-full py-4 rounded-2xl font-bold text-sm text-white bg-gradient-to-r ${plan.theme.bar} shadow-lg hover:shadow-[0_0_30px_-4px_rgba(255,255,255,0.25)] transition-shadow`}
-        style={{ transform: 'translateZ(40px)' }}
+      <p className="relative text-[10px] uppercase tracking-[0.18em] text-gray-600 font-bold mb-3">{L.featTitle}</p>
+
+      <motion.ul
+        variants={{ show: { transition: { staggerChildren: 0.05 } }, hidden: {} }}
+        initial="hidden"
+        whileInView="show"
+        viewport={{ once: true }}
+        className="relative space-y-2.5 text-[13px] flex-1"
       >
-        {t('packages.activate')} {plan.id}
-      </motion.button>
-    </motion.div>
-  );
+        {features.map((f, i) => (
+          <Feature key={i} text={f.text} on={f.on} highlight={f.highlight} check={theme.check} />
+        ))}
+      </motion.ul>
 
-  return (
-    <motion.div
-      ref={ref}
-      style={reduce ? undefined : { rotateX: enterRot, y: enterY, scale: enterScale, opacity: enterOp, transformPerspective: 1400 }}
-      className="h-full"
-    >
-      {plan.featured ? (
-        <div className="relative h-full rounded-3xl p-[1.5px] overflow-hidden shadow-[0_0_60px_-15px_rgba(245,158,11,0.5)]">
-          <motion.div
-            aria-hidden
-            className="absolute left-1/2 top-1/2 w-[220%] aspect-square -translate-x-1/2 -translate-y-1/2"
-            style={{ background: 'conic-gradient(from 0deg, #f59e0b, #f97316, #ec4899, #a855f7, #f59e0b)' }}
-            animate={{ rotate: 360 }}
-            transition={{ duration: 6, repeat: Infinity, ease: 'linear' }}
-          />
-          {card}
-        </div>
-      ) : (
-        card
-      )}
+      <p className="relative text-[12px] text-gray-500 leading-relaxed mt-5 mb-5 min-h-[3.5rem]">
+        {L.detail[pkg.key]}
+      </p>
+
+      <Link
+        to={currentUser ? `/checkout?package=${pkg.key}&cycle=${cycle}` : '/register'}
+        className={`group/btn relative mt-auto block text-center py-3.5 rounded-xl font-bold overflow-hidden text-white text-sm
+          bg-gradient-to-r ${theme.accent} shadow-lg shadow-black/40
+          transition-all duration-300 hover:shadow-xl hover:scale-[1.02] active:scale-[0.98]`}
+      >
+        <span className="relative z-10 inline-flex items-center justify-center gap-2">
+          {L.activate}
+          <Icon d={ARROW} className="w-4 h-4 transition-transform duration-300 group-hover/btn:translate-x-1" />
+        </span>
+        <span className="absolute inset-0 -translate-x-full group-hover/btn:translate-x-full bg-gradient-to-r from-transparent via-white/25 to-transparent transition-transform duration-700 pointer-events-none" />
+      </Link>
     </motion.div>
   );
 }
 
-export default function Packages() {
-  const { t, i18n } = useTranslation();
-  const { currentUser } = useAuth();
-  const navigate = useNavigate();
-  const [customOpen, setCustomOpen] = useState(false);
-  const reduce = useReducedMotion();
-  const lang = (i18n.language || 'ka').split('-')[0];
-  const [cycle, setCycle] = useState('monthly');
-
-  const { scrollYProgress } = useScroll();
-  const orbA = useTransform(scrollYProgress, [0, 1], [0, -500]);
-  const orbB = useTransform(scrollYProgress, [0, 1], [0, 350]);
-
-  const handleActivate = (plan) => {
-    if (!currentUser) { navigate('/login'); return; }
-    navigate(`/checkout/${plan.id.toLowerCase()}?billing=${cycle}`);
-  };
-
+function Feature({ text, on, highlight, check }) {
   return (
-    <div className="relative min-h-screen bg-[#050505] pt-28 pb-24 px-4 overflow-hidden">
-      <motion.div style={{ y: reduce ? 0 : orbA }} className="pointer-events-none absolute top-24 left-[10%] w-[480px] h-[480px] rounded-full bg-blue-600/20 blur-[140px]" />
-      <motion.div style={{ y: reduce ? 0 : orbB }} className="pointer-events-none absolute top-[40%] right-[5%] w-[420px] h-[420px] rounded-full bg-purple-600/15 blur-[140px]" />
-      <div
-        aria-hidden
-        className="pointer-events-none absolute inset-0 opacity-[0.04]"
-        style={{
-          backgroundImage: 'linear-gradient(rgba(255,255,255,0.6) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.6) 1px, transparent 1px)',
-          backgroundSize: '56px 56px',
-        }}
-      />
-
-      <div className="relative max-w-7xl mx-auto">
-        <motion.div initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7 }} className="text-center mb-14">
-          <h1 className="text-4xl sm:text-5xl md:text-6xl font-black text-white tracking-tight mb-8">
-            {t('packages.title')}{' '}
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-cyan-300 to-purple-400">
-              {t('packages.titleAccent')}
-            </span>
-          </h1>
-
-          <div className="relative inline-flex p-1.5 rounded-2xl bg-white/[0.04] border border-white/10 backdrop-blur-xl">
-            {CYCLES.map((c) => {
-              const active = cycle === c.id;
-              return (
-                <button
-                  key={c.id}
-                  type="button"
-                  onClick={() => setCycle(c.id)}
-                  className={`relative px-5 sm:px-6 py-2.5 rounded-xl text-sm font-bold transition-colors ${active ? 'text-white' : 'text-gray-400 hover:text-white'}`}
-                >
-                  {active && (
-                    <motion.span
-                      layoutId="cycle-pill"
-                      transition={{ type: 'spring', stiffness: 380, damping: 30 }}
-                      className="absolute inset-0 rounded-xl bg-gradient-to-r from-blue-500 to-cyan-500 shadow-[0_0_25px_-5px_rgba(6,182,212,0.7)]"
-                    />
-                  )}
-                  <span className="relative">{t(`packages.${c.id}`)}</span>
-                </button>
-              );
-            })}
-          </div>
-        </motion.div>
-
-        <div className="grid sm:grid-cols-2 xl:grid-cols-4 gap-6 items-stretch">
-          {PLANS.map((plan, i) => (
-            <PlanCard
-              key={plan.id}
-              plan={plan}
-              index={i}
-              cycle={cycle}
-              lang={lang}
-              t={t}
-              reduce={reduce}
-              onActivate={() => handleActivate(plan)}
-            />
-          ))}
-        </div>
-
-        <motion.div
-          initial={{ opacity: 0 }}
-          whileInView={{ opacity: 1 }}
-          viewport={{ once: true }}
-          className="mt-14 flex flex-wrap justify-center gap-x-10 gap-y-3 text-sm text-gray-400"
-        >
-          {['cta.trust1', 'cta.trust2', 'cta.trust3'].map((k) => (
-            <div key={k} className="flex items-center gap-2">
-              <span className="w-5 h-5 rounded-full bg-emerald-500/15 text-emerald-400 flex items-center justify-center text-xs">✓</span>
-              {t(k)}
-            </div>
-          ))}
-        </motion.div>
-
-        <motion.div
-          initial={{ opacity: 0, y: 30, scale: 0.97 }}
-          whileInView={{ opacity: 1, y: 0, scale: 1 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.6 }}
-          className="relative mt-20 rounded-[2rem] border border-white/10 bg-gradient-to-br from-white/[0.06] to-white/[0.01] p-10 sm:p-14 text-center overflow-hidden"
-        >
-          <div className="absolute -top-20 left-1/2 -translate-x-1/2 w-[400px] h-[200px] bg-cyan-500/20 blur-[100px] pointer-events-none" />
-          <h2 className="relative text-3xl sm:text-4xl font-black text-white mb-4">
-            {t('cta.title1')}{' '}
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-cyan-400">{t('cta.title2')}</span>
-          </h2>
-          <p className="relative text-gray-400 max-w-xl mx-auto mb-8">{t('cta.desc')}</p>
-          <Link
-            to="/contact"
-            className="relative inline-flex items-center gap-2 px-8 py-4 rounded-2xl bg-white text-black font-bold hover:scale-105 transition-transform"
-          >
-            {t('cta.btnConsult')} →
-          </Link>
-        </motion.div>
-      </div>
-
-      <CustomPackageModal isOpen={customOpen} onClose={() => setCustomOpen(false)} />
-    </div>
+    <motion.li
+      variants={{ hidden: { opacity: 0, x: -8 }, show: { opacity: 1, x: 0 } }}
+      className="flex items-start gap-2.5"
+    >
+      {on ? (
+        <Icon d={CHECK} className={`w-3.5 h-3.5 mt-0.5 shrink-0 ${highlight ? 'text-cyan-400' : check}`} />
+      ) : (
+        <Icon d={CROSS} className="w-3.5 h-3.5 mt-0.5 shrink-0 text-gray-700" />
+      )}
+      <span className={on ? (highlight ? 'text-cyan-300 font-semibold' : 'text-gray-300') : 'text-gray-600'}>
+        {text}
+      </span>
+    </motion.li>
   );
 }
