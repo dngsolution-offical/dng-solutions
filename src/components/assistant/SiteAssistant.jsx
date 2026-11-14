@@ -12,7 +12,7 @@ const ALLOWED_PATHS = [
   '/telegram', '/checkout', '/privacy', '/terms',
 ];
 const MAX_LEN = 2000;
-const MAX_HISTORY = 12;
+const MAX_HISTORY = 8;
 
 const T = {
   ka: {
@@ -22,10 +22,10 @@ const T = {
     close: 'დახურვა',
     placeholder: 'დაწერეთ შეკითხვა...',
     send: 'გაგზავნა',
+    quick: 'სწრაფი კითხვები',
     greeting:
       'გამარჯობა! მე ვარ DNG AI ასისტენტი. დაგეხმარებით საიტის გაცნობაში, პაკეტის არჩევაში და საჭირო გვერდის მოძებნაში. თუ საიტზე ხარვეზს წააწყდებით, გეტყვით, ვის დაუკავშირდეთ.',
     error: 'ახლა ვერ ვუპასუხებ. სცადეთ ხელახლა.',
-    suggestions: ['რა არის DNG Solutions?', 'რა პაკეტები არსებობს?', 'როგორ მივიღო უფასო 7 დღე?', 'როგორ დავუკავშირდე გუნდს?', 'საიტზე ხარვეზი მაქვს'],
   },
   en: {
     title: 'DNG AI Assistant',
@@ -34,10 +34,10 @@ const T = {
     close: 'Close',
     placeholder: 'Type your question...',
     send: 'Send',
+    quick: 'Quick questions',
     greeting:
       "Hi! I'm the DNG AI Assistant. I can help you explore the site, choose a plan and find the right page. If you run into a problem, I'll tell you who to contact.",
     error: 'I cannot answer right now. Please try again.',
-    suggestions: ['What is DNG Solutions?', 'What plans are there?', 'How do I get the free 7-day trial?', 'How do I contact the team?', 'I found a bug on the site'],
   },
   ru: {
     title: 'DNG AI Ассистент',
@@ -46,12 +46,94 @@ const T = {
     close: 'Закрыть',
     placeholder: 'Напишите вопрос...',
     send: 'Отправить',
+    quick: 'Быстрые вопросы',
     greeting:
       'Здравствуйте! Я AI-ассистент DNG. Помогу разобраться с сайтом, выбрать тариф и найти нужную страницу. Если возникнет проблема, подскажу, с кем связаться.',
     error: 'Сейчас не могу ответить. Попробуйте ещё раз.',
-    suggestions: ['Что такое DNG Solutions?', 'Какие есть тарифы?', 'Как получить бесплатный 7-дневный период?', 'Как связаться с командой?', 'Я нашёл ошибку на сайте'],
   },
 };
+
+// სწრაფი კითხვები: პასუხი ლოკალურად იწერება, API-ს არ ეძახის (კრედიტს არ ხარჯავს)
+const QA = [
+  {
+    id: 'about',
+    q: {
+      ka: 'რა არის DNG Solutions?',
+      en: 'What is DNG Solutions?',
+      ru: 'Что такое DNG Solutions?',
+    },
+    a: {
+      ka: 'DNG Solutions არის AI ავტომატიზაციის სტუდია თბილისიდან. ვაძლევთ ბიზნესებს AI აგენტებს, რომლებიც პასუხობენ კლიენტებს, ამუშავებენ შეკვეთებს და ამარტივებენ სამუშაო პროცესებს. დეტალები: [სერვისები](/services)',
+      en: 'DNG Solutions is an AI automation studio based in Tbilisi. We give businesses AI agents that answer clients, process orders and simplify daily workflows. Details: [Services](/services)',
+      ru: 'DNG Solutions — студия AI-автоматизации из Тбилиси. Мы даём бизнесу AI-агентов, которые отвечают клиентам, обрабатывают заказы и упрощают рабочие процессы. Подробнее: [Услуги](/services)',
+    },
+  },
+  {
+    id: 'packages',
+    q: {
+      ka: 'რა პაკეტები არსებობს?',
+      en: 'What plans are available?',
+      ru: 'Какие есть тарифы?',
+    },
+    a: {
+      ka: 'გვაქვს ოთხი პაკეტი: Basic, Gold, Diamond და Infinity. Basic და Gold-ზე შეგიძლიათ უფასო 7-დღიანი ტრიალი. ზუსტი ფასები და დეტალები: [პაკეტები](/packages)',
+      en: 'We offer four plans: Basic, Gold, Diamond and Infinity. Basic and Gold include a free 7-day trial. Exact prices and details: [Plans](/packages)',
+      ru: 'У нас четыре тарифа: Basic, Gold, Diamond и Infinity. На Basic и Gold есть бесплатный пробный период на 7 дней. Точные цены и детали: [Тарифы](/packages)',
+    },
+  },
+  {
+    id: 'trial',
+    q: {
+      ka: 'როგორ მივიღო უფასო 7 დღე?',
+      en: 'How do I get the free 7-day trial?',
+      ru: 'Как получить бесплатные 7 дней?',
+    },
+    a: {
+      ka: 'უფასო 7-დღიანი ტრიალი ხელმისაწვდომია Basic და Gold პაკეტებზე, ერთხელ თითო ანგარიშზე. საჭიროა ანგარიშით შესვლა და გააქტიურება გვერდიდან: [პაკეტები](/packages)',
+      en: 'The free 7-day trial is available on Basic and Gold plans, once per account. Sign in and activate it on the plans page: [Plans](/packages)',
+      ru: 'Бесплатный 7-дневный период доступен на тарифах Basic и Gold, один раз на аккаунт. Войдите в аккаунт и активируйте его на странице тарифов: [Тарифы](/packages)',
+    },
+  },
+  {
+    id: 'contact',
+    q: {
+      ka: 'როგორ დავუკავშირდე გუნდს?',
+      en: 'How can I contact the team?',
+      ru: 'Как связаться с командой?',
+    },
+    a: {
+      ka: 'დაგვირეკეთ: [+995 551 071 451](tel:+995551071451). სრული საკონტაქტო ინფორმაცია და ფორმა: [კონტაქტი](/contact). სოციალურ ქსელებში: [Instagram](https://www.instagram.com/dng.solutions), [TikTok](https://www.tiktok.com/@dng_solution), [Facebook](https://www.facebook.com/profile.php?id=61596586850292)',
+      en: 'Call us: [+995 551 071 451](tel:+995551071451). Full contact details and form: [Contact](/contact). On social media: [Instagram](https://www.instagram.com/dng.solutions), [TikTok](https://www.tiktok.com/@dng_solution), [Facebook](https://www.facebook.com/profile.php?id=61596586850292)',
+      ru: 'Позвоните нам: [+995 551 071 451](tel:+995551071451). Все контакты и форма: [Контакты](/contact). В соцсетях: [Instagram](https://www.instagram.com/dng.solutions), [TikTok](https://www.tiktok.com/@dng_solution), [Facebook](https://www.facebook.com/profile.php?id=61596586850292)',
+    },
+  },
+  {
+    id: 'payment',
+    q: {
+      ka: 'როგორ შევიძინო პაკეტი?',
+      en: 'How do I buy a plan?',
+      ru: 'Как купить тариф?',
+    },
+    a: {
+      ka: 'პაკეტს ირჩევთ გვერდიდან: [პაკეტები](/packages). თუ შეძენასთან ან გადახდასთან დაკავშირებით კითხვა გაქვთ, მიმართეთ: [კონტაქტი](/contact)',
+      en: 'You choose a plan on the plans page: [Plans](/packages). If you have a question about purchase or payment, contact us: [Contact](/contact)',
+      ru: 'Тариф выбирается на странице тарифов: [Тарифы](/packages). Если у вас вопрос по покупке или оплате, свяжитесь с нами: [Контакты](/contact)',
+    },
+  },
+  {
+    id: 'bug',
+    q: {
+      ka: 'საიტზე ხარვეზი მაქვს',
+      en: 'I found a bug on the site',
+      ru: 'Я нашёл ошибку на сайте',
+    },
+    a: {
+      ka: 'მოგვწერეთ, რა მოხდა: რომელ გვერდზე იყავით, რას ცდილობდით და რა შეცდომა გამოჩნდა. შეტყობინებას გუნდს ემაილით გავუგზავნი.',
+      en: 'Tell me what happened: which page you were on, what you were trying to do and what error you saw. I will send the report to the team by email.',
+      ru: 'Опишите, что произошло: на какой странице вы были, что пытались сделать и какая ошибка появилась. Я отправлю отчёт команде на почту.',
+    },
+  },
+];
 
 function normalizeLang(value) {
   const code = String(value || 'ka').toLowerCase().split('-')[0];
@@ -175,9 +257,24 @@ export default function SiteAssistant() {
 
   if (HIDDEN_PREFIXES.some((p) => location.pathname.startsWith(p))) return null;
 
+  const items = QA.map((it) => ({ id: it.id, q: it.q[lang], a: it.a[lang] }));
+  const typed = input.trim().toLowerCase();
+  // წერისას სწრაფი კითხვები ფილტრდება; ცარიელ ველზე ყველა ჩანს
+  const shown = typed ? items.filter((it) => it.q.toLowerCase().includes(typed)) : items;
+
+  // სწრაფი კითხვა: პასუხი ლოკალურად, API-ს გარეშე
+  function answerLocally(item) {
+    setMessages((m) => [...m, { role: 'user', content: item.q }, { role: 'assistant', content: item.a }]);
+    setInput('');
+  }
+
   async function send(raw) {
     const text = String(raw || '').trim().slice(0, MAX_LEN);
     if (!text || busy) return;
+    // თუ ტექსტი სწრაფი კითხვის ზუსტი ტექსტია, ისევ ლოკალური პასუხი მოდის
+    const exact = items.find((it) => it.q.toLowerCase() === text.toLowerCase());
+    if (exact) return answerLocally(exact);
+
     const next = [...messages, { role: 'user', content: text }];
     setMessages(next);
     setInput('');
@@ -187,6 +284,7 @@ export default function SiteAssistant() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
+          lang,
           messages: next.slice(-MAX_HISTORY).map(({ role, content }) => ({ role, content })),
           page: location.pathname,
           diag: {
@@ -276,51 +374,57 @@ export default function SiteAssistant() {
             <Bubble key={i} role={m.role} content={m.content} error={m.error} />
           ))}
           {busy && <TypingDots />}
-          {messages.length === 0 && (
-            <div className="pt-2 flex flex-wrap gap-2">
-              {t.suggestions.map((s) => (
-                <button
-                  key={s}
-                  type="button"
-                  onClick={() => send(s)}
-                  className="px-3 py-1.5 rounded-full border border-white/10 bg-white/[0.03] text-xs text-gray-300 hover:text-white hover:border-cyan-400/40 transition-colors"
-                >
-                  {s}
-                </button>
-              ))}
-            </div>
-          )}
         </div>
 
-        <form
-          onSubmit={(e) => {
-            e.preventDefault();
-            send(input);
-          }}
-          className="border-t border-white/10 p-3 flex items-end gap-2"
-        >
-          <textarea
-            rows={1}
-            value={input}
-            maxLength={MAX_LEN}
-            onChange={(e) => setInput(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter' && !e.shiftKey) {
-                e.preventDefault();
-                send(input);
-              }
+        <div className="border-t border-white/10">
+          {shown.length > 0 && (
+            <div className="px-3 pt-3">
+              {!typed && <p className="text-[10px] uppercase tracking-wider text-gray-500 mb-2">{t.quick}</p>}
+              <div className="flex flex-wrap gap-2 max-h-28 overflow-y-auto pb-1">
+                {shown.map((it) => (
+                  <button
+                    key={it.id}
+                    type="button"
+                    onClick={() => answerLocally(it)}
+                    className="px-3 py-1.5 rounded-full border border-white/10 bg-white/[0.03] text-xs text-gray-300 hover:text-white hover:border-cyan-400/40 transition-colors text-left"
+                  >
+                    {it.q}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              send(input);
             }}
-            placeholder={t.placeholder}
-            className="flex-1 resize-none max-h-32 bg-[#0A0A0A] border border-white/10 rounded-xl px-4 py-3 text-sm text-white placeholder:text-gray-600 focus:outline-none focus:border-cyan-400/50"
-          />
-          <button
-            type="submit"
-            disabled={busy || !input.trim()}
-            className="px-4 py-3 rounded-xl bg-gradient-to-r from-blue-500 to-cyan-400 text-black font-black text-sm disabled:opacity-40 transition-opacity"
+            className="p-3 flex items-end gap-2"
           >
-            {t.send}
-          </button>
-        </form>
+            <textarea
+              rows={1}
+              value={input}
+              maxLength={MAX_LEN}
+              onChange={(e) => setInput(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                  e.preventDefault();
+                  send(input);
+                }
+              }}
+              placeholder={t.placeholder}
+              className="flex-1 resize-none max-h-32 bg-[#0A0A0A] border border-white/10 rounded-xl px-4 py-3 text-sm text-white placeholder:text-gray-600 focus:outline-none focus:border-cyan-400/50"
+            />
+            <button
+              type="submit"
+              disabled={busy || !input.trim()}
+              className="px-4 py-3 rounded-xl bg-gradient-to-r from-blue-500 to-cyan-400 text-black font-black text-sm disabled:opacity-40 transition-opacity"
+            >
+              {t.send}
+            </button>
+          </form>
+        </div>
       </motion.aside>
     </>
   );

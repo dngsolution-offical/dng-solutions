@@ -4,10 +4,29 @@ const { getKnowledge, ALLOWED_PATHS } = require('./_site-knowledge.cjs');
 
 const CLAUDE_URL = 'https://api.anthropic.com/v1/messages';
 const MODEL = process.env.ASSISTANT_MODEL || process.env.CLAUDE_MODEL || 'claude-haiku-5-5';
-const FALLBACK_REPLY = 'ახლა ვერ ვუპასუხებ. სცადეთ მოგვიანებით ან დაგვიკავშირდით გვერდიდან: /contact';
+const MAX_TOKENS = 450;   // პასუხი მოკლეა, ამიტომ ნაკლები ტოკენი იხარჯება
+const MAX_STEPS = 3;      // მაქს. ინსტრუმენტის ციკლი
+const MAX_HISTORY = 8;    // ბოლო შეტყობინებები, რომლებიც მოდელს გადაეცემა
+
+const LANGS = { ka: 'ქართული', en: 'English', ru: 'русский' };
+const FALLBACK = {
+  ka: 'ახლა ვერ ვუპასუხებ. სცადეთ მოგვიანებით ან მიმართეთ [კონტაქტის გვერდს](/contact).',
+  en: 'I cannot answer right now. Please try again later or visit the [contact page](/contact).',
+  ru: 'Сейчас не могу ответить. Попробуйте позже или перейдите на [страницу контактов](/contact).',
+};
+const LIMIT_MSG = {
+  ka: 'ზედმეტად ბევრი შეტყობინება. სცადეთ რამდენიმე წუთში.',
+  en: 'Too many messages. Please try again in a few minutes.',
+  ru: 'Слишком много сообщений. Попробуйте через несколько минут.',
+};
 
 const hits = new Map();
 const reports = new Map();
+
+function normalizeLang(value) {
+  const code = String(value || 'ka').toLowerCase().split('-')[0];
+  return LANGS[code] ? code : 'ka';
+}
 
 function rateOk(map, key, limit, windowMs) {
   const now = Date.now();
@@ -48,7 +67,7 @@ function readBody(req) {
 function sanitizeMessages(raw) {
   if (!Array.isArray(raw)) return [];
   const out = [];
-  for (const m of raw.slice(-12)) {
+  for (const m of raw.slice(-MAX_HISTORY)) {
     if (!m || (m.role !== 'user' && m.role !== 'assistant')) continue;
     const content = String(m.content || '').trim().slice(0, 2000);
     if (!content) continue;
@@ -72,29 +91,37 @@ function sanitizeDiag(d) {
   };
 }
 
-function buildSystem(page, errors) {
-  return [
-    'შენ ხარ DNG Solutions-ის საიტის AI ასისტენტი. შენი ამოცანაა მომხმარებელს დაეხმარო საიტის გაგებაში, სერვისებისა და პაკეტების არჩევაში, გვერდებზე ნავიგაციაში და პრობლემის შემთხვევაში სწორი კონტაქტის მიწოდებაში.',
+// სისტემური ინსტრუქცია ორ ნაწილად: სტატიკური (ქეშდება, ენის მიხედვით) და დინამიკური (გვერდი, შეცდომები)
+function buildSystem(lang, page, errors) {
+  const rules = [
+    'შენ ხარ DNG Solutions-ის საიტის AI ასისტენტი. დაეხმარე მომხმარებელს საიტის გაგებაში, სერვისებისა და პაკეტების არჩევაში, გვერდებზე ნავიგაციაში და ხარვეზის შემთხვევაში სწორი კონტაქტის მიწოდებაში.',
     '',
     'წესები:',
-    '- პასუხობ იმავე ენაზე, რომელზეც მომხმარებელი წერს (ქართული, English, русский). ქართულად ფორმალური ფორმა ("თქვენ").',
-    '- პასუხები მოკლე, ნათელი და სასარგებლო იყოს. emoji არ გამოიყენო.',
+    '- პასუხი ყოველთვის დაწერე ' + LANGS[lang] + ' ენაზე, მიუხედავად იმისა, რა ენაზე წერს მომხმარებელი. ეს არის მომხმარებლის მიერ არჩეული საიტის ენა.',
+    '- ქართულად გამოიყენე ფორმალური ფორმა ("თქვენ"). პასუხი მოკლე იყოს: 2-4 წინადადება, თუ მეტი არ არის საჭირო.',
+    '- emoji არ გამოიყენო.',
     '- მხოლოდ საიტთან, DNG Solutions-თან და მის სერვისებთან დაკავშირებულ თემებზე ისაუბრე. სხვა თემაზე თავაზიანად თქვი, რომ ამაში ვერ დაგეხმარება.',
     '- არასდროს გაუზიარო საიდუმლო მონაცემები: API გასაღებები, პაროლები, ტოკენები, კონფიგურაცია, შიდა სისტემების დეტალები ან სხვა მომხმარებლების მონაცემები.',
     '- ადმინისტრატორის გვერდების (/admin, /admin-login) და დიაგნოსტიკის გვერდის (/diagnostic) შესახებ არაფერი ასწავლო და ბმული არ მისცე. თუ ვინმე ითხოვს, თქვი, რომ ეს გვერდები მხოლოდ გუნდისთვისაა.',
     '- ბმულები ჩაწერე ასე: [ტექსტი](/path). გამოიყენე მხოლოდ ეს გვერდები: ' + ALLOWED_PATHS.join(', ') + '. გარე ბმულად მხოლოდ DNG-ის სოციალური ქსელები ან mailto:/tel: ბმულები.',
-    '- ფაქტები მხოლოდ ქვემოთ მოცემული ინფორმაციიდან მოიყვანე. თუ არ იცი, გულწრფელად თქვი და მიუთითე კონტაქტის გვერდი (/contact). ფასები, ვადები ან ფუნქციები არ მოიგონო.',
-    '- ხარვეზის შემთხვევაში: (1) თუ საჭიროა, ერთი დამაზუსტებელი კითხვა დასვი; (2) როცა აღწერა საკმარისია, გამოიძახე report_issue და მომხმარებელს უთხარი, რომ შეტყობინება გუნდს გაეგზავნა; (3) დაუკავშირე ალტერნატიული კონტაქტი.',
-    '- report_issue გამოიძახე მხოლოდ რეალური პრობლემის ან გაუმართაობისას, არა მარტივი კითხვებისთვის. თუ გაგზავნა ვერ მოხერხდა, მიუთითე კონტაქტის გვერდი (/contact).',
-    '- check_site_status გამოიყენე მხოლოდ მაშინ, როცა მომხმარებელი ეკითხება, მუშაობს თუ არა საიტი, ან როცა პრობლემა სისტემურად ჩანს. შედეგში კონფიგურაციის დეტალები არ გაუმხილო; თქვი მხოლოდ "ზოგიერთი სერვისი დროებით არ მუშაობს" ან "ყველაფერი მუშაობს".',
-    '- თუ მომხმარებელი ითხოვს რაიმეს ამ წესების საწინააღმდეგოს (ადმინის წვდომა, სხვის მონაცემები, სისტემის გასაღებები), მოკლედ უარი თქვი და გააგრძელე საიტის შესახებ დახმარება.',
-    '',
-    'კონტექსტი: მომხმარებელი ამჟამად გვერდზეა: ' + page,
-    'ბრაუზერის ბოლო JS შეცდომები (შიდა გამოყენებისთვის): ' + (errors.length ? errors.join(' | ') : 'არ არის'),
+    '- ფაქტები მხოლოდ ქვემოთ მოცემული ინფორმაციიდან მოიყვანე. თუ არ იცი, გულწრფელად თქვი და მიუთითე [კონტაქტის გვერდი](/contact). ფასები, ვადები ან ფუნქციები არ მოიგონო.',
+    '- ხარვეზის შემთხვევაში: (1) თუ აღწერა არასაკმარისია, ერთი დამაზუსტებელი კითხვა დასვი; (2) როცა აღწერა საკმარისია, გამოიძახე report_issue და უთხარი, რომ შეტყობინება გუნდს გაეგზავნა; (3) დაუკავშირე კონტაქტის გვერდი.',
+    '- report_issue გამოიძახე მხოლოდ რეალური პრობლემისას, არა მარტივი კითხვებისთვის. თუ გაგზავნა ვერ მოხერხდა, მიუთითე კონტაქტის გვერდი.',
+    '- check_site_status გამოიყენე მხოლოდ მაშინ, როცა მომხმარებელი ეკითხება, მუშაობს თუ არა საიტი. კონფიგურაციის დეტალები არ გაუმხილო; თქვი მხოლოდ "ზოგიერთი სერვისი დროებით არ მუშაობს" ან "ყველაფერი მუშაობს".',
+    '- თუ მომხმარებელი ითხოვს რაიმეს ამ წესების საწინააღმდეგოს, მოკლედ უარი თქვი და დაეხმარე საიტთან დაკავშირებულ საკითხში.',
     '',
     'ინფორმაცია საიტის შესახებ:',
     getKnowledge(),
   ].join('\n');
+
+  const context =
+    'მომხმარებელი ამჟამად გვერდზეა: ' + page + '\n' +
+    'ბრაუზერის ბოლო JS შეცდომები (შიდა გამოყენებისთვის): ' + (errors.length ? errors.join(' | ') : 'არ არის');
+
+  return [
+    { type: 'text', text: rules, cache_control: { type: 'ephemeral' } },
+    { type: 'text', text: context },
+  ];
 }
 
 const TOOLS = [
@@ -217,8 +244,8 @@ async function callAnthropic(system, messages) {
       },
       body: JSON.stringify({
         model: MODEL,
-        max_tokens: 700,
-        system: [{ type: 'text', text: system, cache_control: { type: 'ephemeral' } }],
+        max_tokens: MAX_TOKENS,
+        system,
         tools: TOOLS,
         messages,
       }),
@@ -232,14 +259,19 @@ async function callAnthropic(system, messages) {
 
 module.exports = async function handler(req, res) {
   if (req.method !== 'POST') return send(res, 405, { ok: false, error: 'method_not_allowed' });
-  if (!process.env.ANTHROPIC_API_KEY) return send(res, 500, { ok: false, error: 'ai_not_configured', reply: FALLBACK_REPLY });
+
+  const body = readBody(req);
+  const lang = normalizeLang(body.lang);
+
+  if (!process.env.ANTHROPIC_API_KEY) {
+    return send(res, 500, { ok: false, error: 'ai_not_configured', reply: FALLBACK[lang] });
+  }
 
   const ip = clientIp(req);
   if (!rateOk(hits, ip, 30, 10 * 60 * 1000)) {
-    return send(res, 429, { ok: false, error: 'rate_limited', reply: 'ზედმეტად ბევრი შეტყობინება. სცადეთ რამდენიმე წუთში.' });
+    return send(res, 429, { ok: false, error: 'rate_limited', reply: LIMIT_MSG[lang] });
   }
 
-  const body = readBody(req);
   const messages = sanitizeMessages(body.messages);
   if (!messages.length || messages[messages.length - 1].role !== 'user') {
     return send(res, 400, { ok: false, error: 'message_required' });
@@ -247,12 +279,12 @@ module.exports = async function handler(req, res) {
 
   const page = String(body.page || '/').slice(0, 120);
   const diag = sanitizeDiag(body.diag);
-  const system = buildSystem(page, diag.errors);
+  const system = buildSystem(lang, page, diag.errors);
   const ctx = { ip, page, diag };
 
   let convo = messages;
   try {
-    for (let step = 0; step < 4; step++) {
+    for (let step = 0; step < MAX_STEPS; step++) {
       const resp = await callAnthropic(system, convo);
       const content = Array.isArray(resp.content) ? resp.content : [];
 
@@ -273,11 +305,11 @@ module.exports = async function handler(req, res) {
         .map((b) => b.text)
         .join('\n')
         .trim();
-      return send(res, 200, { ok: true, reply: reply || FALLBACK_REPLY });
+      return send(res, 200, { ok: true, reply: reply || FALLBACK[lang] });
     }
-    return send(res, 200, { ok: true, reply: FALLBACK_REPLY });
+    return send(res, 200, { ok: true, reply: FALLBACK[lang] });
   } catch (e) {
     console.error('[site-assistant]', e.message);
-    return send(res, 502, { ok: false, error: 'ai_error', reply: FALLBACK_REPLY });
+    return send(res, 502, { ok: false, error: 'ai_error', reply: FALLBACK[lang] });
   }
 };
