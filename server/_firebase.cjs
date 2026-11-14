@@ -11,7 +11,7 @@ let initError = null;
 function initializeFirebase() {
   if (initialized) {
     if (initError) throw new Error(initError);
-    return { admin, db, auth };
+    return { admin, db, auth, FieldValue: admin.firestore.FieldValue };
   }
   initialized = true;
 
@@ -107,7 +107,7 @@ function initializeFirebase() {
     }
 
     console.log('[fb-init] All services ready');
-    return { admin, db, auth };
+    return { admin, db, auth, FieldValue: admin.firestore.FieldValue };
   } catch (e) {
     initError = e.message;
     console.error('[fb-init] FAILED:', e.message);
