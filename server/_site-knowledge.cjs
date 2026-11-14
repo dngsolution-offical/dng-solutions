@@ -57,7 +57,7 @@ function getKnowledge() {
     '',
     'კონტაქტი (დაუკავშირდით პრობლემის ან კითხვის შემთხვევაში):',
     email ? `- ემაილი: ${email}` : '- ემაილი: იხილეთ /contact გვერდი',
-    '- ტელეფონი: +995 551 222 098, +995 551 071 451',
+    '- ტელეფონი: +995 551 071 451',
     '- Instagram: https://www.instagram.com/dng.solutions',
     '- TikTok: https://www.tiktok.com/@dng_solution',
     '- Facebook: https://www.facebook.com/profile.php?id=61596586850292',
