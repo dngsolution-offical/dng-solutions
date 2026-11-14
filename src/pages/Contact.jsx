@@ -7,8 +7,6 @@ import { toast, Toaster } from 'react-hot-toast';
 
 const CONTACT = {
   email: 'dng.solution01@gmail.com',
-  phone1: '+995 551 222 098',
-  phone1Tel: '+995551222098',
   phone2: '+995 551 071 451',
   phone2Tel: '+995551071451',
 };
@@ -113,11 +111,6 @@ export default function Contact() {
                 <Icons.Mail />
                 <span className="relative z-10 group-hover:text-white transition-colors">Email</span>
               </a>
-              <a href={`tel:${CONTACT.phone1Tel}`}
-                className="group inline-flex items-center gap-3 px-7 py-4 bg-emerald-500/10 text-emerald-400 font-bold rounded-2xl border border-emerald-500/20 hover:bg-emerald-500/20 hover:border-emerald-500/40 backdrop-blur-xl transition-all">
-                <Icons.Phone />
-                <span>{CONTACT.phone1}</span>
-              </a>
             </div>
           </motion.div>
 
@@ -141,23 +134,6 @@ export default function Contact() {
               </div>
             </motion.a>
 
-            <motion.a href={`tel:${CONTACT.phone1Tel}`} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} whileHover={{ y: -6 }}
-              className="group relative bg-[#0A0A0A] border border-white/[0.08] hover:border-emerald-500/40 rounded-3xl p-6 sm:p-7 overflow-hidden transition-colors">
-              <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/[0.08] to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-              <div className="absolute -top-10 -right-10 w-40 h-40 bg-emerald-500/20 rounded-full blur-3xl opacity-0 group-hover:opacity-100 transition-opacity" />
-              <div className="relative z-10">
-                <div className="flex items-start justify-between mb-5">
-                  <div className="w-14 h-14 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400 group-hover:scale-110 transition-transform"><Icons.Phone /></div>
-                  <span className="text-[10px] font-black uppercase tracking-widest text-emerald-400/60 group-hover:text-emerald-400 transition-colors">01</span>
-                </div>
-                <p className="text-xs text-gray-500 uppercase tracking-wider mb-2 font-semibold">{t('contactPage.phoneLabel')}</p>
-                <p className="text-white font-bold text-sm mb-5 group-hover:text-emerald-400 transition-colors">{CONTACT.phone1}</p>
-                <div className="flex items-center gap-2 text-xs font-bold text-emerald-400 opacity-0 group-hover:opacity-100 -translate-x-2 group-hover:translate-x-0 transition-all">
-                  <span>{t('contactPage.send')}</span>
-                  <Icons.ArrowUpRight />
-                </div>
-              </div>
-            </motion.a>
 
             <motion.a href={`tel:${CONTACT.phone2Tel}`} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }} whileHover={{ y: -6 }}
               className="group relative bg-[#0A0A0A] border border-white/[0.08] hover:border-teal-500/40 rounded-3xl p-6 sm:p-7 overflow-hidden transition-colors sm:col-span-2 lg:col-span-1">
