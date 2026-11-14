@@ -41,7 +41,8 @@
                  "realtime":  "Real-time",
                  "tryNow":  "Try now",
                  "rating":  "Rating",
-                 "packageBreakdown":  "Package Distribution"
+                 "packageBreakdown":  "Package Distribution",
+                 "recentUsers":  "Recently joined users"
              },
     "aboutPreview":  {
                          "badge":  "About us",

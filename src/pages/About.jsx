@@ -1,288 +1,381 @@
-import React, { useState, useEffect } from 'react';
+// src/pages/About.jsx — ჩვენს შესახებ (ka / en / ru)
+import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
-import { collection, getDocs } from 'firebase/firestore';
+import { collection, getDocs } from 'firebase/firestore/lite';
 import { db } from '../firebase';
 
-const Icons = {
-  Target: () => <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>,
-  Eye: () => <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>,
-  Star: () => <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" /></svg>,
-  Clock: () => <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>,
-  Bot: () => <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>,
-  TrendingUp: () => <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" /></svg>,
-  Users: () => <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" /></svg>,
-  Money: () => <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>,
-  CheckCircle: () => <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M5 13l4 4L19 7" /></svg>,
-  ArrowRight: () => <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M14 5l7 7m0 0l-7 7m7-7H3" /></svg>,
-  Sparkles: () => <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" /></svg>,
+const TEXT = {
+  ka: {
+    badge: 'DNG Solutions',
+    title1: 'ვქმნით ხელოვნურ ინტელექტს,',
+    title2: 'რომელიც ბიზნესს ეხმარება',
+    tagline: 'ვქმნით ხელოვნურ ინტელექტს, რომელიც ბიზნესს ეხმარება ზრდაში',
+    intro: 'DNG Solutions არის AI ავტომატიზაციის პლატფორმა, რომელიც ზოგავს დროს, ამცირებს ხარჯებს და ზრდის შემოსავალს.',
+    statsUsers: 'მომხმარებელი', statsRating: 'რეიტინგი', statsSupport: 'AI მხარდაჭერა',
+    missionTitle: 'ჩვენი მისია',
+    missionDesc: 'გავხადოთ ხელოვნური ინტელექტი ხელმისაწვდომი ყველა ბიზნესისთვის — დიდისა და პატარასთვის. ტექნოლოგია უნდა ეხმარებოდეს ადამიანებს რუტინულ სამუშაოში, რათა მეტი დრო დარჩეთ სტრატეგიულ და კრეატიულ ამოცანებზე.',
+    visionTitle: 'ჩვენი ხედვა',
+    visionDesc: 'ვიყოთ წამყვანი AI კომპანია საქართველოსა და რეგიონში — სერვისებით, რომლებიც რეალურად ცვლის ბიზნესის ყოველდღიურობას.',
+    whyBadge: 'რატომ ჩვენ',
+    whyTitle: 'როგორ ეხმარება DNG Solutions თქვენს ბიზნესს',
+    whyDesc: 'AI აგენტები მუშაობენ 24/7 და ზოგავენ თქვენს გუნდს ათასობით საათს ყოველთვიურად.',
+    b1t: 'დაზოგე დრო', b1d: 'ავტომატიზაცია ათავისუფლებს გუნდს რუტინისგან.',
+    b2t: 'შეამცირე ხარჯები', b2d: 'ერთი AI აგენტი ზოგჯერ სამი თანამშრომლის სამუშაოს ასრულებს.',
+    b3t: 'გაზარდე შემოსავალი', b3d: 'სწრაფი შეკვეთების დამუშავება = მეტი კმაყოფილი კლიენტი.',
+    b4t: 'მოიზიდე კლიენტები', b4d: 'CRM და Email აგენტები ლიდებს 24/7 ამუშავებენ.',
+    agentsBadge: 'AI აგენტები',
+    agentsTitle: 'სპეციალიზებული AI აგენტები',
+    agentsDesc: 'თითოეული აგენტი ერთ კონკრეტულ თემაზე მუშაობს და სხვა თემებზე პასუხს არ იძლევა.',
+    agents: [
+      ['ტექსტის აგენტი', 'შეკვეთის დეტალების ამოღება ტექსტიდან'],
+      ['Excel აგენტი', 'ცხრილების ავტომატური შევსება'],
+      ['Email აგენტი', 'პროფესიონალური წერილების წერა'],
+      ['Vision აგენტი', 'ინფორმაციის ამოღება ფოტოდან / PDF-დან'],
+      ['რეპორტის აგენტი', 'დღიური და თვიური ანგარიშები'],
+      ['CRM აგენტი', 'კლიენტებისა და ლიდების მართვა'],
+      ['გრაფიკის აგენტი', 'ავტომატური დაგეგმვა'],
+      ['ავტომატიზაციის აგენტი', 'სამუშაო პროცესების აწყობა'],
+    ],
+    tryAgents: 'სცადე AI აგენტები',
+    valuesTitle: 'რასაც ვაფასებთ',
+    v1t: 'ინოვაცია', v1d: 'მუდმივად ვეძებთ ახალ გზებს, რომ პროდუქტი უფრო ჭკვიანი და სწრაფი იყოს.',
+    v2t: 'უსაფრთხოება', v2d: 'თქვენი მონაცემები Google Firebase-ის დაშიფვრით და წვდომის კონტროლით არის დაცული.',
+    v3t: 'გამჭვირვალობა', v3d: 'ფასები ნათელია, ფარული გადასახადები არ არსებობს.',
+    useTitle: 'ვის ვემსახურებით',
+    uc: [
+      ['ღონისძიების ორგანიზატორები', 'ათობით შეკვეთის ერთდროულად მართვა.'],
+      ['რესტორნები და კაფეები', 'სწრაფი ფასების კალკულაცია და შეკვეთები.'],
+      ['მცირე და საშუალო ბიზნესი', 'ავტომატიზაცია ყოველდღიურ სამუშაოში.'],
+      ['ონლაინ მაღაზიები', 'შეკვეთების დამუშავება და კლიენტების კომუნიკაცია.'],
+      ['საკონსულტაციო კომპანიები', 'ანგარიშები და დოკუმენტების ანალიზი.'],
+      ['სასტუმროები', 'ჯავშნების და სტუმრების მოთხოვნების დამუშავება.'],
+    ],
+    ctaTitle: 'მზად ხარ დასაწყებად?',
+    ctaPackages: 'პაკეტები',
+    ctaContact: 'დაგვიკავშირდი',
+    loadError: '',
+  },
+  en: {
+    badge: 'DNG Solutions',
+    title1: 'We build artificial intelligence',
+    title2: 'that helps business grow',
+    tagline: 'We build artificial intelligence that helps businesses grow',
+    intro: 'DNG Solutions is an AI automation platform that saves time, cuts costs and increases revenue.',
+    statsUsers: 'Users', statsRating: 'Rating', statsSupport: 'AI support',
+    missionTitle: 'Our mission',
+    missionDesc: 'Make artificial intelligence accessible to every business, big or small. Technology should take over routine work so people can focus on strategy and creativity.',
+    visionTitle: 'Our vision',
+    visionDesc: 'Be the leading AI company in Georgia and the region, with services that truly change daily business operations.',
+    whyBadge: 'Why us',
+    whyTitle: 'How DNG Solutions helps your business',
+    whyDesc: 'AI agents work 24/7 and save your team thousands of hours every month.',
+    b1t: 'Save time', b1d: 'Automation frees your team from routine work.',
+    b2t: 'Cut costs', b2d: 'One AI agent can do the work of three employees.',
+    b3t: 'Grow revenue', b3d: 'Fast order processing means happier clients and more sales.',
+    b4t: 'Attract clients', b4d: 'CRM and Email agents process leads 24/7.',
+    agentsBadge: 'AI agents',
+    agentsTitle: 'Specialized AI agents',
+    agentsDesc: 'Each agent works on one specific topic and does not answer outside its expertise.',
+    agents: [
+      ['Text agent', 'Extracts order details from text'],
+      ['Excel agent', 'Automatically fills spreadsheets'],
+      ['Email agent', 'Writes professional emails'],
+      ['Vision agent', 'Extracts information from photos / PDFs'],
+      ['Report agent', 'Daily and monthly reports'],
+      ['CRM agent', 'Manages clients and leads'],
+      ['Schedule agent', 'Automatic scheduling'],
+      ['Automation agent', 'Builds workflows'],
+    ],
+    tryAgents: 'Try AI agents',
+    valuesTitle: 'What we value',
+    v1t: 'Innovation', v1d: 'We constantly look for new ways to make our product smarter and faster.',
+    v2t: 'Security', v2d: 'Your data is protected with Firebase encryption and access control.',
+    v3t: 'Transparency', v3d: 'Prices are clear and there are no hidden fees.',
+    useTitle: 'Who we serve',
+    uc: [
+      ['Event organizers', 'Manage dozens of orders at once.'],
+      ['Restaurants and cafés', 'Fast price calculation and orders.'],
+      ['Small and medium business', 'Automation in everyday work.'],
+      ['Online stores', 'Order processing and customer communication.'],
+      ['Consulting firms', 'Reports and document analysis.'],
+      ['Hotels', 'Reservations and guest requests.'],
+    ],
+    ctaTitle: 'Ready to get started?',
+    ctaPackages: 'Plans',
+    ctaContact: 'Contact us',
+  },
+  ru: {
+    badge: 'DNG Solutions',
+    title1: 'Создаем искусственный интеллект,',
+    title2: 'который помогает бизнесу расти',
+    tagline: 'Мы создаем искусственный интеллект, который помогает бизнесу расти',
+    intro: 'DNG Solutions — AI-платформа автоматизации, которая экономит время, снижает расходы и увеличивает доход.',
+    statsUsers: 'Пользователи', statsRating: 'Рейтинг', statsSupport: 'AI поддержка',
+    missionTitle: 'Наша миссия',
+    missionDesc: 'Сделать искусственный интеллект доступным для каждого бизнеса — большого и малого. Технологии должны брать на себя рутину, чтобы люди занимались стратегией и творчеством.',
+    visionTitle: 'Наше видение',
+    visionDesc: 'Стать ведущей AI-компанией в Грузии и регионе, с сервисами, которые реально меняют ежедневную работу бизнеса.',
+    whyBadge: 'Почему мы',
+    whyTitle: 'Как DNG Solutions помогает вашему бизнесу',
+    whyDesc: 'AI-агенты работают 24/7 и экономят вашей команде тысячи часов каждый месяц.',
+    b1t: 'Экономьте время', b1d: 'Автоматизация освобождает команду от рутины.',
+    b2t: 'Снижайте расходы', b2d: 'Один AI-агент может заменить работу трех сотрудников.',
+    b3t: 'Растите доход', b3d: 'Быстрая обработка заказов — довольные клиенты и больше продаж.',
+    b4t: 'Привлекайте клиентов', b4d: 'CRM и Email агенты обрабатывают лиды 24/7.',
+    agentsBadge: 'AI агенты',
+    agentsTitle: 'Специализированные AI агенты',
+    agentsDesc: 'Каждый агент работает над одной конкретной темой и не отвечает за пределами своей компетенции.',
+    agents: [
+      ['Текстовый агент', 'Извлекает детали заказа из текста'],
+      ['Excel агент', 'Автоматически заполняет таблицы'],
+      ['Email агент', 'Пишет профессиональные письма'],
+      ['Vision агент', 'Извлекает данные из фото / PDF'],
+      ['Агент отчетов', 'Ежедневные и ежемесячные отчеты'],
+      ['CRM агент', 'Управляет клиентами и лидами'],
+      ['Агент расписания', 'Автоматическое планирование'],
+      ['Агент автоматизации', 'Строит рабочие процессы'],
+    ],
+    tryAgents: 'Попробовать AI агентов',
+    valuesTitle: 'Что мы ценим',
+    v1t: 'Инновации', v1d: 'Мы постоянно ищем новые способы сделать продукт умнее и быстрее.',
+    v2t: 'Безопасность', v2d: 'Ваши данные защищены шифрованием Firebase и контролем доступа.',
+    v3t: 'Прозрачность', v3d: 'Цены понятны, скрытых комиссий нет.',
+    useTitle: 'Кого мы обслуживаем',
+    uc: [
+      ['Организаторы мероприятий', 'Десятки заказов одновременно.'],
+      ['Рестораны и кафе', 'Быстрый расчет цен и заказы.'],
+      ['Малый и средний бизнес', 'Автоматизация повседневной работы.'],
+      ['Интернет-магазины', 'Обработка заказов и коммуникация с клиентами.'],
+      ['Консалтинговые компании', 'Отчеты и анализ документов.'],
+      ['Отели', 'Бронирования и запросы гостей.'],
+    ],
+    ctaTitle: 'Готовы начать?',
+    ctaPackages: 'Пакеты',
+    ctaContact: 'Связаться с нами',
+  },
 };
 
-const AI_AGENTS = [
-  { key: 'text', color: 'from-blue-500/20 to-blue-600/10', text: 'text-blue-400', border: 'border-blue-500/20' },
-  { key: 'excel', color: 'from-emerald-500/20 to-emerald-600/10', text: 'text-emerald-400', border: 'border-emerald-500/20' },
-  { key: 'email', color: 'from-cyan-500/20 to-cyan-600/10', text: 'text-cyan-400', border: 'border-cyan-500/20' },
-  { key: 'vision', color: 'from-purple-500/20 to-purple-600/10', text: 'text-purple-400', border: 'border-purple-500/20' },
-  { key: 'report', color: 'from-yellow-500/20 to-yellow-600/10', text: 'text-yellow-400', border: 'border-yellow-500/20' },
-  { key: 'crm', color: 'from-pink-500/20 to-pink-600/10', text: 'text-pink-400', border: 'border-pink-500/20' },
-  { key: 'schedule', color: 'from-orange-500/20 to-orange-600/10', text: 'text-orange-400', border: 'border-orange-500/20' },
-  { key: 'automation', color: 'from-red-500/20 to-red-600/10', text: 'text-red-400', border: 'border-red-500/20' },
+const ICONS = {
+  clock: 'M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z',
+  money: 'M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z',
+  trend: 'M13 7h8m0 0v8m0-8l-8 8-4-4-6 6',
+  users: 'M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z',
+  target: 'M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z',
+  eye: 'M15 12a3 3 0 11-6 0 3 3 0 016 0zM2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z',
+  shield: 'M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z',
+  bot: 'M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z',
+  check: 'M5 13l4 4L19 7',
+  arrow: 'M14 5l7 7m0 0l-7 7m7-7H3',
+};
+
+const Icon = ({ d, className = 'w-6 h-6' }) => (
+  <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d={d} />
+  </svg>
+);
+
+const BENEFIT_ICONS = [ICONS.clock, ICONS.money, ICONS.trend, ICONS.users];
+const BENEFIT_COLORS = [
+  'bg-blue-500/15 text-blue-400',
+  'bg-emerald-500/15 text-emerald-400',
+  'bg-purple-500/15 text-purple-400',
+  'bg-amber-500/15 text-amber-400',
+];
+const VALUE_ICONS = [ICONS.target, ICONS.shield, ICONS.eye];
+const VALUE_COLORS = [
+  'bg-blue-500/15 text-blue-400',
+  'bg-emerald-500/15 text-emerald-400',
+  'bg-amber-500/15 text-amber-400',
 ];
 
-const BENEFITS = [
-  { key: 'benefit1', icon: 'Clock', color: 'from-blue-500/20 to-blue-600/10', text: 'text-blue-400' },
-  { key: 'benefit2', icon: 'Money', color: 'from-emerald-500/20 to-emerald-600/10', text: 'text-emerald-400' },
-  { key: 'benefit3', icon: 'TrendingUp', color: 'from-purple-500/20 to-purple-600/10', text: 'text-purple-400' },
-  { key: 'benefit4', icon: 'Users', color: 'from-amber-500/20 to-amber-600/10', text: 'text-amber-400' },
-];
+function Section({ children, className = '' }) {
+  return (
+    <motion.section
+      initial={{ opacity: 0, y: 20 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, margin: '-60px' }}
+      transition={{ duration: 0.5 }}
+      className={`mb-20 ${className}`}
+    >
+      {children}
+    </motion.section>
+  );
+}
 
 export default function About() {
-  const { t } = useTranslation();
-  const [stats, setStats] = useState({ users: 0, rating: 0 });
+  const { i18n } = useTranslation();
+  const lang = ['ka', 'en', 'ru'].includes((i18n.language || 'ka').split('-')[0])
+    ? (i18n.language || 'ka').split('-')[0]
+    : 'ka';
+  const L = TEXT[lang];
+
+  const [stats, setStats] = useState({ users: null, rating: null });
 
   useEffect(() => {
-    async function fetchStats() {
+    let cancelled = false;
+    (async () => {
       try {
         const [usersSnap, ratingsSnap] = await Promise.all([
           getDocs(collection(db, 'users')),
-          getDocs(collection(db, 'ratings'))
+          getDocs(collection(db, 'ratings')),
         ]);
-
-        let avgRating = 0;
+        let avg = null;
         if (ratingsSnap.size > 0) {
           let total = 0;
-          ratingsSnap.forEach(doc => total += doc.data().rating || 0);
-          avgRating = (total / ratingsSnap.size).toFixed(1);
+          ratingsSnap.forEach((d) => { total += Number(d.data().rating) || 0; });
+          avg = Number((total / ratingsSnap.size).toFixed(1));
         }
-
-        setStats({ users: usersSnap.size, rating: avgRating || 0 });
-      } catch (err) {
-        console.error('About stats error:', err);
+        if (!cancelled) setStats({ users: usersSnap.size, rating: avg });
+      } catch (e) {
+        console.warn('[About] stats:', e.message);
       }
-    }
-    fetchStats();
+    })();
+    return () => { cancelled = true; };
   }, []);
 
-  const iconMap = { Clock: Icons.Clock, Money: Icons.Money, TrendingUp: Icons.TrendingUp, Users: Icons.Users };
+  const statCards = [
+    { value: stats.users ?? '—', label: L.statsUsers },
+    { value: stats.rating ?? '—', label: L.statsRating },
+    { value: '24/7', label: L.statsSupport },
+  ];
 
   return (
     <div className="min-h-screen bg-[#050505] relative overflow-hidden">
-      {/* Background glows */}
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[800px] bg-blue-500/5 rounded-full blur-[150px] pointer-events-none" />
       <div className="absolute top-1/2 right-0 w-[600px] h-[600px] bg-cyan-500/5 rounded-full blur-[150px] pointer-events-none" />
 
       <div className="relative max-w-6xl mx-auto px-4 pt-28 pb-20">
-
-        {/* ═══ HERO ═══ */}
+        {/* HERO */}
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="text-center mb-20">
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-dng-cyan/10 border border-dng-cyan/20 mb-6">
-            <Icons.Sparkles />
-            <span className="text-xs font-bold text-dng-cyan uppercase tracking-widest">DNG Solutions</span>
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-cyan-400/10 border border-cyan-400/20 mb-6">
+            <span className="text-xs font-bold text-cyan-300 uppercase tracking-widest">{L.badge}</span>
           </div>
           <h1 className="text-4xl sm:text-5xl md:text-6xl font-black text-white mb-5 leading-tight">
-            {t('aboutPage.title1')}{' '}
-            <span className="bg-gradient-to-r from-dng-blue via-dng-cyan to-emerald-400 bg-clip-text text-transparent">
-              {t('aboutPage.title2')}
+            {L.title1}{' '}
+            <span className="bg-gradient-to-r from-blue-400 via-cyan-300 to-emerald-400 bg-clip-text text-transparent">
+              {L.title2}
             </span>
           </h1>
-          <p className="text-xl sm:text-2xl text-gray-300 max-w-3xl mx-auto leading-relaxed font-medium mb-3">
-            {t('aboutPage.tagline')}
-          </p>
-          <p className="text-gray-500 max-w-2xl mx-auto text-base leading-relaxed">
-            {t('aboutPage.intro')}
-          </p>
+          <p className="text-xl sm:text-2xl text-gray-300 max-w-3xl mx-auto leading-relaxed font-medium mb-3">{L.tagline}</p>
+          <p className="text-gray-500 max-w-2xl mx-auto text-base leading-relaxed">{L.intro}</p>
         </motion.div>
 
-        {/* ═══ STATS ═══ */}
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="grid grid-cols-3 gap-3 sm:gap-5 mb-20">
-          {[
-            { value: stats.users, label: t('aboutPage.statsUsers') },
-            { value: stats.rating > 0 ? stats.rating : '—', label: t('aboutPage.statsRating') },
-            { value: '24/7', label: t('aboutPage.statsSupport') },
-          ].map((s, i) => (
-            <div key={i} className="bg-gradient-to-br from-white/[0.04] to-white/[0.01] border border-white/10 rounded-2xl p-5 sm:p-7 text-center backdrop-blur-sm">
-              <div className="text-3xl sm:text-4xl md:text-5xl font-black bg-gradient-to-br from-white to-gray-400 bg-clip-text text-transparent mb-2">
-                {s.value}
-              </div>
-              <div className="text-[10px] sm:text-xs text-gray-500 font-bold uppercase tracking-widest">
-                {s.label}
-              </div>
-            </div>
-          ))}
-        </motion.div>
-
-        {/* ═══ MISSION & VISION ═══ */}
+        {/* MISSION & VISION */}
         <div className="grid md:grid-cols-2 gap-5 mb-20">
-          <motion.div initial={{ opacity: 0, x: -20 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }} className="relative bg-gradient-to-br from-blue-500/10 to-cyan-500/5 border border-blue-500/20 rounded-3xl p-8 overflow-hidden group">
-            <div className="absolute -top-10 -right-10 w-40 h-40 bg-blue-500/10 rounded-full blur-2xl group-hover:bg-blue-500/20 transition-all" />
-            <div className="relative">
-              <div className="w-14 h-14 rounded-2xl bg-blue-500/20 flex items-center justify-center text-blue-400 mb-5">
-                <Icons.Target />
-              </div>
-              <h3 className="text-2xl font-bold text-white mb-3">{t('aboutPage.mission')}</h3>
-              <p className="text-gray-400 leading-relaxed">{t('aboutPage.missionDesc')}</p>
+          <Section className="mb-0">
+            <div className="h-full bg-gradient-to-br from-blue-500/10 to-cyan-500/5 border border-blue-500/20 rounded-3xl p-8">
+              <div className="w-14 h-14 rounded-2xl bg-blue-500/20 flex items-center justify-center text-blue-400 mb-5"><Icon d={ICONS.target} /></div>
+              <h3 className="text-2xl font-bold text-white mb-3">{L.missionTitle}</h3>
+              <p className="text-gray-400 leading-relaxed">{L.missionDesc}</p>
             </div>
-          </motion.div>
-
-          <motion.div initial={{ opacity: 0, x: 20 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }} className="relative bg-gradient-to-br from-purple-500/10 to-pink-500/5 border border-purple-500/20 rounded-3xl p-8 overflow-hidden group">
-            <div className="absolute -top-10 -right-10 w-40 h-40 bg-purple-500/10 rounded-full blur-2xl group-hover:bg-purple-500/20 transition-all" />
-            <div className="relative">
-              <div className="w-14 h-14 rounded-2xl bg-purple-500/20 flex items-center justify-center text-purple-400 mb-5">
-                <Icons.Eye />
-              </div>
-              <h3 className="text-2xl font-bold text-white mb-3">{t('aboutPage.vision')}</h3>
-              <p className="text-gray-400 leading-relaxed">{t('aboutPage.visionDesc')}</p>
+          </Section>
+          <Section className="mb-0">
+            <div className="h-full bg-gradient-to-br from-purple-500/10 to-pink-500/5 border border-purple-500/20 rounded-3xl p-8">
+              <div className="w-14 h-14 rounded-2xl bg-purple-500/20 flex items-center justify-center text-purple-400 mb-5"><Icon d={ICONS.eye} /></div>
+              <h3 className="text-2xl font-bold text-white mb-3">{L.visionTitle}</h3>
+              <p className="text-gray-400 leading-relaxed">{L.visionDesc}</p>
             </div>
-          </motion.div>
+          </Section>
         </div>
 
-        {/* ═══ WHY US — BENEFITS ═══ */}
-        <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="mb-20">
+        {/* WHY US */}
+        <Section>
           <div className="text-center mb-12">
-            <p className="text-xs text-dng-cyan uppercase tracking-widest font-bold mb-3">{t('aboutPage.whyBadge')}</p>
-            <h2 className="text-3xl sm:text-4xl font-black text-white mb-3">{t('aboutPage.whyTitle')}</h2>
-            <p className="text-gray-400 max-w-2xl mx-auto">{t('aboutPage.whyDesc')}</p>
+            <p className="text-xs text-cyan-300 uppercase tracking-widest font-bold mb-3">{L.whyBadge}</p>
+            <h2 className="text-3xl sm:text-4xl font-black text-white mb-3">{L.whyTitle}</h2>
+            <p className="text-gray-400 max-w-2xl mx-auto">{L.whyDesc}</p>
           </div>
-
           <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            {BENEFITS.map((b, i) => {
-              const IconComp = iconMap[b.icon];
+            {[L.b1t, L.b2t, L.b3t, L.b4t].map((title, i) => {
+              const desc = [L.b1d, L.b2d, L.b3d, L.b4d][i];
               return (
-                <motion.div
-                  key={b.key}
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ delay: i * 0.1 }}
-                  whileHover={{ y: -4 }}
-                  className="relative bg-[#0A0A0C] border border-white/10 rounded-2xl p-6 hover:border-white/20 transition-all group overflow-hidden"
-                >
-                  <div className={`absolute inset-0 bg-gradient-to-br ${b.color} opacity-0 group-hover:opacity-100 transition-opacity`} />
-                  <div className="relative">
-                    <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${b.color} ${b.text} flex items-center justify-center mb-4 border border-white/5 group-hover:scale-110 transition-transform`}>
-                      <IconComp />
-                    </div>
-                    <h3 className="text-base font-bold text-white mb-2">{t(`aboutPage.${b.key}Title`)}</h3>
-                    <p className="text-gray-400 text-sm leading-relaxed">{t(`aboutPage.${b.key}Desc`)}</p>
+                <div key={i} className="bg-[#0A0A0C] border border-white/10 rounded-2xl p-6 hover:border-white/20 transition-colors">
+                  <div className={`w-12 h-12 rounded-xl flex items-center justify-center mb-4 ${BENEFIT_COLORS[i]}`}>
+                    <Icon d={BENEFIT_ICONS[i]} />
                   </div>
-                </motion.div>
+                  <h3 className="text-base font-bold text-white mb-2">{title}</h3>
+                  <p className="text-gray-400 text-sm leading-relaxed">{desc}</p>
+                </div>
               );
             })}
           </div>
-        </motion.div>
+        </Section>
 
-        {/* ═══ AI AGENTS ═══ */}
-        <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="mb-20">
+        {/* AI AGENTS */}
+        <Section>
           <div className="text-center mb-12">
-            <p className="text-xs text-dng-cyan uppercase tracking-widest font-bold mb-3">{t('aboutPage.agentsBadge')}</p>
-            <h2 className="text-3xl sm:text-4xl font-black text-white mb-3">{t('aboutPage.agentsTitle')}</h2>
-            <p className="text-gray-400 max-w-2xl mx-auto">{t('aboutPage.agentsDesc')}</p>
+            <p className="text-xs text-cyan-300 uppercase tracking-widest font-bold mb-3">{L.agentsBadge}</p>
+            <h2 className="text-3xl sm:text-4xl font-black text-white mb-3">{L.agentsTitle}</h2>
+            <p className="text-gray-400 max-w-2xl mx-auto">{L.agentsDesc}</p>
           </div>
-
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
-            {AI_AGENTS.map((agent, i) => (
-              <motion.div
-                key={agent.key}
-                initial={{ opacity: 0, scale: 0.95 }}
-                whileInView={{ opacity: 1, scale: 1 }}
-                viewport={{ once: true }}
-                transition={{ delay: i * 0.05 }}
-                whileHover={{ y: -3 }}
-                className="bg-[#0A0A0C] border border-white/10 rounded-xl p-4 hover:border-white/20 transition-all group"
-              >
-                <div className={`w-9 h-9 rounded-lg bg-gradient-to-br ${agent.color} ${agent.text} flex items-center justify-center mb-3 border ${agent.border} group-hover:scale-110 transition-transform`}>
-                  <Icons.Bot />
+            {L.agents.map(([name, desc], i) => (
+              <div key={i} className="bg-[#0A0A0C] border border-white/10 rounded-xl p-4 hover:border-white/20 transition-colors">
+                <div className="w-9 h-9 rounded-lg bg-cyan-500/15 text-cyan-300 flex items-center justify-center mb-3">
+                  <Icon d={ICONS.bot} className="w-5 h-5" />
                 </div>
-                <h4 className="text-sm font-bold text-white mb-1 leading-tight">{t(`aboutPage.agent_${agent.key}_name`)}</h4>
-                <p className="text-[11px] text-gray-500 leading-snug">{t(`aboutPage.agent_${agent.key}_desc`)}</p>
-              </motion.div>
+                <h4 className="text-sm font-bold text-white mb-1">{name}</h4>
+                <p className="text-[11px] text-gray-500 leading-snug">{desc}</p>
+              </div>
             ))}
           </div>
-
           <div className="mt-10 text-center">
-            <Link
-              to="/agents"
-              className="group inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-dng-blue to-dng-cyan text-white font-bold rounded-xl hover:opacity-90 transition-all shadow-lg shadow-cyan-500/20"
-            >
-              {t('aboutPage.tryAgents')}
-              <span className="group-hover:translate-x-1 transition-transform">
-                <Icons.ArrowRight />
-              </span>
+            <Link to="/agents" className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-blue-500 to-cyan-500 text-white font-bold rounded-xl hover:opacity-90 transition-opacity">
+              {L.tryAgents} <Icon d={ICONS.arrow} className="w-4 h-4" />
             </Link>
           </div>
-        </motion.div>
+        </Section>
 
-        {/* ═══ VALUES ═══ */}
-        <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="mb-20">
-          <h2 className="text-3xl font-black text-white text-center mb-12">{t('aboutPage.values')}</h2>
+        {/* VALUES */}
+        <Section>
+          <h2 className="text-3xl font-black text-white text-center mb-12">{L.valuesTitle}</h2>
           <div className="grid md:grid-cols-3 gap-4">
             {[
-              { icon: <Icons.Target />, title: 'value1', desc: 'value1Desc', color: 'blue' },
-              { icon: <Icons.Star />, title: 'value2', desc: 'value2Desc', color: 'emerald' },
-              { icon: <Icons.Clock />, title: 'value3', desc: 'value3Desc', color: 'amber' },
-            ].map((v, i) => (
-              <div key={i} className="bg-[#0A0A0C] border border-white/10 rounded-2xl p-6 text-center hover:border-white/20 transition-all">
-                <div className={`w-12 h-12 rounded-xl bg-${v.color}-500/20 flex items-center justify-center text-${v.color}-400 mx-auto mb-4`}>
-                  {v.icon}
+              [L.v1t, L.v1d],
+              [L.v2t, L.v2d],
+              [L.v3t, L.v3d],
+            ].map(([title, desc], i) => (
+              <div key={i} className="bg-[#0A0A0C] border border-white/10 rounded-2xl p-6 text-center hover:border-white/20 transition-colors">
+                <div className={`w-12 h-12 rounded-xl flex items-center justify-center mx-auto mb-4 ${VALUE_COLORS[i]}`}>
+                  <Icon d={VALUE_ICONS[i]} />
                 </div>
-                <h3 className="text-base font-bold text-white mb-2">{t(`aboutPage.${v.title}`)}</h3>
-                <p className="text-gray-400 text-sm leading-relaxed">{t(`aboutPage.${v.desc}`)}</p>
+                <h3 className="text-base font-bold text-white mb-2">{title}</h3>
+                <p className="text-gray-400 text-sm leading-relaxed">{desc}</p>
               </div>
             ))}
           </div>
-        </motion.div>
+        </Section>
 
-        {/* ═══ USE CASES ═══ */}
-        <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="mb-20">
-          <div className="relative bg-gradient-to-br from-[#0A0A0C] to-[#111] border border-white/10 rounded-3xl p-8 sm:p-12 overflow-hidden">
-            <div className="absolute top-0 right-0 w-64 h-64 bg-dng-cyan/5 rounded-full blur-3xl pointer-events-none" />
-            <div className="absolute bottom-0 left-0 w-64 h-64 bg-dng-blue/5 rounded-full blur-3xl pointer-events-none" />
-
-            <div className="relative">
-              <div className="text-center mb-10">
-                <p className="text-xs text-dng-cyan uppercase tracking-widest font-bold mb-3">{t('aboutPage.useCasesBadge')}</p>
-                <h2 className="text-2xl sm:text-3xl font-black text-white mb-3">{t('aboutPage.useCasesTitle')}</h2>
-                <p className="text-gray-400 max-w-2xl mx-auto">{t('aboutPage.useCasesDesc')}</p>
-              </div>
-
-              <div className="grid sm:grid-cols-2 gap-3">
-                {[1, 2, 3, 4, 5, 6].map(i => (
-                  <motion.div
-                    key={i}
-                    initial={{ opacity: 0, x: -10 }}
-                    whileInView={{ opacity: 1, x: 0 }}
-                    viewport={{ once: true }}
-                    transition={{ delay: i * 0.05 }}
-                    className="flex items-start gap-3 bg-white/[0.03] border border-white/10 rounded-xl p-4 hover:border-white/20 transition-all"
-                  >
-                    <div className="w-6 h-6 rounded-full bg-emerald-500/20 flex items-center justify-center text-emerald-400 flex-shrink-0 mt-0.5">
-                      <Icons.CheckCircle />
-                    </div>
-                    <div>
-                      <h4 className="text-sm font-bold text-white mb-1">{t(`aboutPage.useCase${i}Title`)}</h4>
-                      <p className="text-xs text-gray-400 leading-relaxed">{t(`aboutPage.useCase${i}Desc`)}</p>
-                    </div>
-                  </motion.div>
-                ))}
-              </div>
+        {/* USE CASES */}
+        <Section>
+          <div className="bg-[#0A0A0C] border border-white/10 rounded-3xl p-8 sm:p-12">
+            <h2 className="text-2xl sm:text-3xl font-black text-white text-center mb-10">{L.useTitle}</h2>
+            <div className="grid sm:grid-cols-2 gap-3">
+              {L.uc.map(([title, desc], i) => (
+                <div key={i} className="flex items-start gap-3 bg-white/[0.03] border border-white/10 rounded-xl p-4">
+                  <div className="w-6 h-6 rounded-full bg-emerald-500/20 flex items-center justify-center text-emerald-400 shrink-0 mt-0.5">
+                    <Icon d={ICONS.check} className="w-3.5 h-3.5" />
+                  </div>
+                  <div>
+                    <h4 className="text-sm font-bold text-white mb-1">{title}</h4>
+                    <p className="text-xs text-gray-400 leading-relaxed">{desc}</p>
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
-        </motion.div>
+        </Section>
 
-        {/* ═══ CTA ═══ */}
-        <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="text-center">
-          <h2 className="text-2xl sm:text-3xl font-black text-white mb-6">{t('aboutPage.ctaTitle')}</h2>
+        {/* CTA */}
+        <Section className="text-center mb-0">
+          <h2 className="text-2xl sm:text-3xl font-black text-white mb-6">{L.ctaTitle}</h2>
           <div className="inline-flex flex-col sm:flex-row gap-3">
-            <Link to="/packages" className="px-8 py-3.5 bg-white text-black font-bold rounded-xl hover:bg-gray-200 transition-all active:scale-95">
-              {t('aboutPage.ctaPackages')}
-            </Link>
-            <Link to="/contact" className="px-8 py-3.5 bg-white/5 border border-white/10 text-white font-bold rounded-xl hover:bg-white/10 hover:border-white/20 transition-all active:scale-95">
-              {t('aboutPage.ctaContact')}
-            </Link>
+            <Link to="/packages" className="px-8 py-3.5 bg-white text-black font-bold rounded-xl hover:bg-gray-200 transition-colors">{L.ctaPackages}</Link>
+            <Link to="/contact" className="px-8 py-3.5 bg-white/5 border border-white/10 text-white font-bold rounded-xl hover:bg-white/10 transition-colors">{L.ctaContact}</Link>
           </div>
-        </motion.div>
-
+        </Section>
       </div>
     </div>
   );

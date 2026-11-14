@@ -3,6 +3,7 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../../context/AuthContext';
+import { auth } from '../../firebase';
 import ActivePackageBadge from '../ui/ActivePackageBadge';
 
 const LANGUAGES = [
@@ -67,6 +68,7 @@ export default function Navbar() {
   const [langOpen, setLangOpen] = useState(false);
   const [userOpen, setUserOpen] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [pkg, setPkg] = useState(null);
   const langRef = useRef(null);
   const userRef = useRef(null);
 
@@ -104,6 +106,21 @@ export default function Navbar() {
     return () => { document.body.style.overflow = ''; };
   }, [mobileOpen]);
 
+  useEffect(() => {
+    if (!currentUser) { setPkg(null); return; }
+    let cancelled = false;
+    (async () => {
+      try {
+        const token = await auth.currentUser.getIdToken();
+        const r = await fetch('/api/telegram-status', { headers: { Authorization: `Bearer ${token}` } });
+        const d = await r.json();
+        if (!cancelled && d.ok) setPkg(d.package);
+      } catch {
+        if (!cancelled) setPkg(null);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [currentUser]);
   const activeLangCode = (i18n.language || 'ka').split('-')[0];
   const currentLang = LANGUAGES.find((l) => l.code === activeLangCode) || LANGUAGES[0];
 
@@ -126,10 +143,12 @@ export default function Navbar() {
     { name: t('nav.about'), path: '/about' },
     { name: t('nav.contact'), path: '/contact' },
   ];
+  const hasTelegramAccess = pkg === 'Diamond' || pkg === 'Infinity';
   const authLinks = currentUser
     ? [
         { name: t('nav.agents'), path: '/agents' },
         { name: t('nav.dashboard'), path: '/dashboard' },
+        ...(hasTelegramAccess ? [{ name: 'Telegram', path: '/telegram' }] : []),
       ]
     : [];
   const allLinks = [...links, ...authLinks];

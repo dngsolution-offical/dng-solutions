@@ -16,7 +16,6 @@ import Register from './pages/Register';
 import Login from './pages/Login';
 import Profile from './pages/Profile';
 import Settings from './pages/Settings';
-import Dashboard from './pages/Dashboard';
 import AIAutomation from './pages/AIAutomation';
 import Admin from './pages/Admin';
 import AdminPayments from './pages/AdminPayments';
@@ -32,7 +31,8 @@ import Terms from './pages/Terms';
 import NotFound from './pages/NotFound';
 import ProtectedRoute from './components/auth/ProtectedRoute';
 import Agents from './pages/Agents';
-import TestFiles from './pages/TestFiles';
+import Dashboard from './pages/Dashboard';
+import Telegram from './pages/Telegram';
 
 const FULLSCREEN_ROUTES = ['/agents', '/agents/history', '/agents/schedules'];
 
@@ -58,13 +58,12 @@ function AppContent() {
           <Route path="/login" element={<Login />} />
           <Route path="/profile" element={<Profile />} />
           <Route path="/settings" element={<Settings />} />
-          <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
           <Route path="/ai" element={<AIAutomation />} />
           <Route path="/admin/payments" element={<AdminPayments />} />
           <Route path="/admin" element={<ProtectedRoute><Admin /></ProtectedRoute>} />
           <Route path="/admin-login" element={<AdminLogin />} />
           <Route path="/admin/agents" element={<AdminAgents />} />
-          <Route path="/agents" element={<ProtectedRoute><Agents /></ProtectedRoute>} />`n          <Route path="/test-files" element={<TestFiles />} />
+          <Route path="/agents" element={<ProtectedRoute><Agents /></ProtectedRoute>} />
           <Route path="/agents/history" element={<AgentHistory />} />
           <Route path="/agents/schedules" element={<Schedules />} />
           <Route path="/checkout" element={<Checkout />} />
@@ -73,6 +72,8 @@ function AppContent() {
           <Route path="/diagnostic" element={<Diagnostic />} />
           <Route path="/privacy" element={<Privacy />} />
           <Route path="/terms" element={<Terms />} />
+          <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/telegram" element={<ProtectedRoute><Telegram /></ProtectedRoute>} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </AnimatePresence>
