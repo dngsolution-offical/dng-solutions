@@ -4,6 +4,7 @@ const { sendMessage, sendDocument } = require('./_telegram.cjs');
 const { runAgent, TELEGRAM_LIMITS, ApiError } = require('./_ai-core.cjs');
 const { AGENTS } = require('./_agents.cjs');
 const { buildXlsxBuffer } = require('./_files.cjs');
+const { accountStatus, orderWeight, HEAVY_WEIGHT } = require('./_quota.cjs');
 
 const HELP = [
   'გამარჯობა! მე ვარ DNG AI ასისტენტი.',
@@ -17,7 +18,7 @@ const HELP = [
   'შეგიძლიათ მომწეროთ ნებისმიერ ენაზე — ქართულად, ინგლისურად, რუსულად თუ სხვა.',
   'You can write to me in any language — I will reply in the same language you use.',
   '',
-  'ბრძანებები: /agents (აგენტების სია), /agent <სახელი> (აგენტის არჩევა)',
+  'ბრძანებები: /agents (აგენტების სია), /agent <სახელი> (აგენტის არჩევა), /status (ანგარიში და ორდერები)',
 ].join('\n');
 
 module.exports = async function handler(req, res) {
@@ -36,7 +37,7 @@ module.exports = async function handler(req, res) {
   const text = String(msg.text || msg.caption || '').trim();
 
   try {
-    const { db, FieldValue } = initializeFirebase();
+    const { db, auth, FieldValue } = initializeFirebase();
     const linkRef = db.collection('telegram_links').doc(String(chatId));
 
     if (!text) {
@@ -99,13 +100,16 @@ module.exports = async function handler(req, res) {
       );
       await codeRef.delete();
 
+      const st = await accountStatus(db, auth, data.uid).catch(() => '');
       await sendMessage(
         chatId,
         [
           'ანგარიში წარმატებით დაკავშირდა!',
           '',
+          st,
+          '',
           HELP,
-        ].join('\n')
+        ].filter((x) => x !== undefined).join('\n')
       );
       return res.json({ ok: true });
     }
@@ -117,7 +121,7 @@ module.exports = async function handler(req, res) {
 
     if (text === '/agents') {
       const list = Object.entries(AGENTS)
-        .map(([k, a]) => `${k} — ${a.label} (${a.minPkg}+)`)
+        .map(([k, a]) => `${k} — ${a.label} (${a.minPkg}+)${orderWeight(k) > 1 ? ` ×${HEAVY_WEIGHT} ორდერი` : ''}`)
         .join('\n');
       await sendMessage(chatId, `ხელმისაწვდომი აგენტები:\n\n${list}\n\nაირჩევისთვის: /agent <სახელი>`);
       return res.json({ ok: true });
@@ -132,6 +136,12 @@ module.exports = async function handler(req, res) {
       return res.json({ ok: true });
     }
     const link = linkSnap.data();
+
+    if (text === '/status') {
+      const st = await accountStatus(db, auth, link.uid);
+      await sendMessage(chatId, st);
+      return res.json({ ok: true });
+    }
 
     if (text.startsWith('/agent ')) {
       const key = text.split(/\s+/)[1];
@@ -151,7 +161,10 @@ module.exports = async function handler(req, res) {
       source: 'telegram',
     });
 
-    await sendMessage(chatId, result.reply || 'პასუხის მომზადება ვერ მოხერხდა, სცადეთ ხელახლა.');
+    const footer = result.orders
+      ? `\n\n— ორდერები: ${result.orders.used}/${result.orders.limit}`
+      : '';
+    await sendMessage(chatId, (result.reply || 'პასუხის მომზადება ვერ მოხერხდა, სცადეთ ხელახლა.') + footer);
 
     for (const f of result.files || []) {
       const buf = f.excelData ? await buildXlsxBuffer(f.excelData.sheets) : Buffer.from(f.content || '', 'utf8');

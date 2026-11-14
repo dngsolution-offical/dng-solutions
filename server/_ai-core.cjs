@@ -2,6 +2,7 @@ const { effectiveExpiry } = require('./_plan.cjs');
 // api/_ai-core.cjs — ერთიანი AI ბირთვი: ვებ-ჩატი და ტელეგრამი ერთნაირად მუშაობენ
 const { initializeFirebase } = require('./_firebase.cjs');
 const { AGENTS, LEVELS, DAILY, EXCEL_CONTRACT, FILE_CONTRACT } = require('./_agents.cjs');
+const { orderWeight, reserveOrders, refundOrders } = require('./_quota.cjs');
 
 const CLAUDE_URL = 'https://api.anthropic.com/v1/messages';
 const MODEL = process.env.CLAUDE_MODEL || process.env.ANTHROPIC_MODEL || 'claude-haiku-5-5';
@@ -126,6 +127,13 @@ async function runAgent({ uid, agentKey: requested, text, history, image, source
     throw new ApiError(429, 'daily_limit_reached', `დღიური ლიმიტი ამოიწურა (${used}/${limit}). ხვალ განახლდება.`);
   }
 
+  // თვიური ორდერები: ვჯავშნით AI-ზე წასვლამდე, ჩავარდნის შემთხვევაში ვაბრუნებთ
+  const weight = orderWeight(agentKey);
+  const quota = await reserveOrders(db, uid, pkg, weight);
+  if (!quota.ok) {
+    throw new ApiError(429, 'orders_exhausted', `ამ თვის ორდერები ამოიწურა (${quota.used}/${quota.limit}). ახალი თვე ან პაკეტის განახლება საჭიროა.`);
+  }
+
   const userContent = [];
   if (image && image.data && image.mediaType) {
     userContent.push({ type: 'image', source: { type: 'base64', media_type: image.mediaType, data: image.data } });
@@ -184,6 +192,7 @@ async function runAgent({ uid, agentKey: requested, text, history, image, source
       ? 'AI-მ დრო ვერ მოასწრო. სცადე თავიდან.'
       : 'AI სერვისში შეცდომა მოხდა.';
     console.error('[ai-core]', e.message);
+    await refundOrders(db, uid, weight).catch(() => {});
     throw new ApiError(500, 'ai_error', friendly);
   }
 
@@ -210,6 +219,7 @@ async function runAgent({ uid, agentKey: requested, text, history, image, source
     mode: agentKey,
     package: pkg,
     limits: { used: used + 1, limit },
+    orders: { used: quota.used, limit: quota.limit, weight },
   };
 }
 
