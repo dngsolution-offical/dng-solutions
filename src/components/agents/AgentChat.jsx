@@ -81,7 +81,6 @@ const ICON_MAP = {
 // 21 BUSINESS AGENTS (NO EMOJIS)
 // ───────────────────────────────────────────────────────────────────────────
 const AI_AGENTS = [
-  { id: 'standard', icon: 'Zap', label: 'Assistant', desc: 'General AI help', minPackage: 'Free', gradient: 'from-blue-500 to-cyan-500', color: 'text-blue-400', bg: 'bg-blue-500/10', category: 'core' },
   { id: 'thinking', icon: 'Brain', label: 'Deep Thinking', desc: 'Strategic reasoning', minPackage: 'Gold', gradient: 'from-amber-500 to-orange-500', color: 'text-amber-400', bg: 'bg-amber-500/10', category: 'core' },
   { id: 'business', icon: 'Trending', label: 'Business', desc: 'Strategy & growth', minPackage: 'Basic', gradient: 'from-emerald-500 to-teal-500', color: 'text-emerald-400', bg: 'bg-emerald-500/10', category: 'business' },
   { id: 'startup', icon: 'Rocket', label: 'Startup', desc: 'Ideas, MVP, funding', minPackage: 'Gold', gradient: 'from-indigo-500 to-purple-500', color: 'text-indigo-400', bg: 'bg-indigo-500/10', category: 'business' },
@@ -368,7 +367,7 @@ export default function AgentChat({ agent, onClose, onHome }) {
   });
   const [input, setInput] = useState('');
   const [imageFile, setImageFile] = useState(null);
-  const [activeMode, setActiveMode] = useState('standard');
+  const [activeMode, setActiveMode] = useState('business');
   const [isSending, setIsSending] = useState(false);
   const [showModes, setShowModes] = useState(false);
   const [error, setError] = useState(null);
