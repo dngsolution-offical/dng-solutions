@@ -33,6 +33,7 @@ import ProtectedRoute from './components/auth/ProtectedRoute';
 import Agents from './pages/Agents';
 import Dashboard from './pages/Dashboard';
 import Telegram from './pages/Telegram';
+import SiteAssistant from './components/assistant/SiteAssistant';
 
 const FULLSCREEN_ROUTES = ['/agents', '/agents/history', '/agents/schedules'];
 
@@ -79,6 +80,7 @@ function AppContent() {
       </AnimatePresence>
 
       {!isFullscreen && <Footer />}
+      <SiteAssistant />
     </div>
   );
 }

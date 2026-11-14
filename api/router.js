@@ -14,6 +14,7 @@ const ROUTES = {
   'start-trial': 'start-trial.cjs',
   'admin': 'admin.js',
   'admin-login': 'admin-login.js',
+  'site-assistant': 'site-assistant.cjs',
 };
 
 module.exports = async function handler(req, res) {
