@@ -61,7 +61,7 @@ function AppContent() {
           <Route path="/settings" element={<Settings />} />
           <Route path="/ai" element={<AIAutomation />} />
           <Route path="/admin/payments" element={<AdminPayments />} />
-          <Route path="/admin" element={<ProtectedRoute><Admin /></ProtectedRoute>} />
+          <Route path="/admin" element={<Admin />} />
           <Route path="/admin-login" element={<AdminLogin />} />
           <Route path="/admin/agents" element={<AdminAgents />} />
           <Route path="/agents" element={<ProtectedRoute><Agents /></ProtectedRoute>} />
